@@ -25,3 +25,6 @@ logs/
 __pycache__/
 *.pyc
 .DS_Store
+# submission copies (built from this repo; see SUBMISSION_*/README_SUBMISSION.md)
+SUBMISSION_SERRA_2026_1112/
+SUBMISSION_SERRA_2026_1112.zip
