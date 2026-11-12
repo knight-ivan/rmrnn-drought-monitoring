@@ -57,8 +57,10 @@ percentiles and reference events; \texttt{serra/add\_spi30.py} adds the post hoc
 \texttt{serra/covariate\_analysis.py} produce all results; \texttt{build\_temperature.py},
 \texttt{serra/train\_models\_mv.py}, \texttt{serra/build\_scores\_mv.py}, \texttt{serra/covariate\_analysis\_mv.py}
 and \texttt{serra/drift\_mv.py} (with the \texttt{--mv} option of the evaluation scripts) carry out the
-temperature-aware analysis; \texttt{serra/make\_tables.py} writes every
-table and every number quoted in the text; \texttt{serra/figures.py} draws the figures.
+temperature-aware analysis; \texttt{serra/text\_checks.py} tabulates the descriptive quantities quoted
+for the figures (composites, operating curves, station traces) and the interval-width comparison;
+\texttt{serra/make\_tables.py} writes every table and every number quoted in the text, and stops if a
+descriptive statement no longer matches the results; \texttt{serra/figures.py} draws the figures.
 \end{enumerate}
 The pre-specified protocol and its deviation log are in \texttt{PROTOCOL.md}. Training all models took
 about one hour (precipitation-only) and one hour (temperature-aware) on a 16-core workstation.
