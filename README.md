@@ -63,8 +63,9 @@ python3 code/serra/make_tables.py && python3 code/serra/figures.py && python3 co
 1. The multivariate extension has been run (negative). Decide whether to submit
    this evaluation framing.
 2. Co-author (Foo) review; CRediT roles are copied from the JoH version.
-3. In the submission system: enter ORCIDs (Chang 0000-0002-4977-7721; Foo if available),
-   author contributions and competing interests (SERRA takes these from the interface).
+3. In the submission system: enter ORCIDs (Foo 0000-0003-4200-5849; Chang 0000-0002-4977-7721;
+   both are also printed on the title pages), author contributions and competing interests
+   (SERRA takes these from the interface).
 4. On acceptance: make this repository public (`gh repo edit knight-ivan/rmrnn-drought-monitoring
    --visibility public --accept-visibility-change-consequences`).
 

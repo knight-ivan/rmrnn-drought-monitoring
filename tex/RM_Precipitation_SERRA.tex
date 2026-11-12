@@ -18,6 +18,7 @@
 
 \theoremstyle{thmstyletwo}
 \newtheorem{remark}{Remark}
+\newcommand{\orcidtext}[1]{{\small(\href{https://orcid.org/#1}{ORCID #1})}\,}
 \raggedbottom
 
 \begin{document}
@@ -27,12 +28,12 @@
 recurrent precipitation model monitor drought onset? A pre-specified event-based evaluation of
 backward-coherence regularisation}
 
-\author[1]{\fnm{Hui-Mean} \sur{Foo}}\email{huimean87@gmail.com}
-\author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}}\email{ycchang@as.edu.tw}
+\author[1]{\fnm{Hui-Mean} \sur{Foo}\,\orcidtext{0000-0003-4200-5849}}\email{huimean87@gmail.com}
+\author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}\,\orcidtext{0000-0002-4977-7721}}\email{ycchang@as.edu.tw}
 \affil[1]{\orgdiv{Institute of Statistical Science}, \orgname{Academia Sinica},
 \orgaddress{\city{Taipei}, \postcode{11529}, \country{Taiwan}}}
 
-\abstract{A recurrent network fitted to precipitation carries a hidden state that summarises recent
+\abstract{\mathversion{normal}A recurrent network fitted to precipitation carries a hidden state that summarises recent
 weather, and monitoring that state for drought onset is appealing. We study a penalty, motivated by
 reverse-martingale structure, that makes each hidden state reconstructable from its successor, and
 monitor the online reconstruction error (the \emph{defect}) with a CUSUM procedure. The evaluation was
