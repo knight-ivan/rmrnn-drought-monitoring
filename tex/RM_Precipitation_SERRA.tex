@@ -49,8 +49,9 @@ median \dtimallDoneDthree\ days earlier on events both detected; daily SPI-30 re
 speed, and the defect added no predictive information once SPI-30 was known. A pre-registered extension
 that gave the network temperature and evaporative demand improved its forecasts but weakened the defect,
 which detected \mvpodallDeight\ of onsets against \mvpodallDoneone\ for SPEI-90. In neither form did the
-penalty improve monitoring. The defect behaves as a short-memory precipitation indicator, and the
-evaluation framework applies to any learned monitoring statistic.}
+penalty improve monitoring. The results are consistent with the defect acting as a short-memory
+precipitation indicator, and the evaluation framework can be applied to other learned monitoring
+statistics.}
 
 \keywords{sequential change detection, CUSUM, drought monitoring, standardized precipitation index,
 recurrent neural networks, event-based verification}
@@ -62,18 +63,18 @@ recurrent neural networks, event-based verification}
 Drought monitoring rests on standardised indices of accumulated precipitation, above all the
 Standardized Precipitation Index (SPI) and its temperature-aware counterpart SPEI
 \citep{mckee1993,wmo2012,vicenteserrano2010,mishra2010,hao2017}. Each summarises the record through one
-moving sum and responds only once a deficit has accumulated. Recurrent neural networks are increasingly
-used for hydrometeorological series \citep{hochreiter1997,kratzert2019}, and their hidden state
-summarises recent inputs in a learned, nonlinear way. Monitoring the residuals or latent states of
-learned models is common in anomaly detection \citep{hundman2018,gama2014}, but whether such a state
-yields a calibrated drought monitor that carries information beyond standard indices has rarely been
-tested with the controls that operational monitoring needs.
+moving sum and responds only once a deficit has accumulated. Recurrent neural networks
+\citep{hochreiter1997} are increasingly used for hydrometeorological series \citep{kratzert2019}, and
+their hidden state summarises recent inputs in a learned, nonlinear way. Monitoring the residuals or
+latent states of learned models is common in anomaly detection \citep{hundman2018,gama2014}, but we are
+not aware of a test of whether such a state yields a calibrated drought monitor that carries
+information beyond standard indices, made with the controls that operational monitoring needs.
 
 We study one construction: a penalty, motivated by reverse-martingale structure \citep{doob1953}, that
 asks each hidden state to be reconstructable from its successor, with the online reconstruction error
 (the \emph{defect}) monitored by a cumulative-sum (CUSUM) procedure
-\citep{page1954,lorden1971,moustakides1986,tartakovsky2014}. An earlier exploratory version of this work
-reported that the defect alarmed before a 90-day precipitation total. That comparison used a
+\citep{page1954,lorden1971,moustakides1986,tartakovsky2014}. In unpublished exploratory work, the defect
+alarmed before a 90-day precipitation total. That comparison used a
 non-standard comparator, measured ``lead'' between two alarms rather than from an independently dated
 onset, had one drought per region, and did not isolate the penalty. Here, 64-year gauge records allow
 SPI and SPEI to be fitted on 30 reference years; detectors are scored against \nevall\ drought onsets
@@ -86,9 +87,9 @@ alarm budgets, independently defined events and paired cluster-bootstrap inferen
 of the defect with daily and monthly SPI, its own ablation and the network's forecast residual on
 \nstall\ stations in four climates; (iii) tests of its association with soil moisture, temperature and
 evapotranspiration and of its incremental predictive information; (iv) equivalence tests of forecast
-accuracy; and (v) a pre-registered temperature-aware extension compared with SPEI. The defect of a
-precipitation-only network turns out to be a valid but short-memory drought indicator whose advantage
-over SPI-90 is mostly that of a shorter time scale; a temperature-aware state forecasts better but
+accuracy; and (v) a pre-registered temperature-aware extension compared with SPEI. In our data the
+defect of a precipitation-only network carries a short-memory drought signal, and most of its timing
+advantage over SPI-90 is reproduced by a 30-day SPI; a temperature-aware state forecasts better but
 monitors worse; and the penalty smooths the state path without improving monitoring.
 Sections~\ref{sec:data}--\ref{sec:methods} describe the data and methods, Section~\ref{sec:results} the
 results and Section~\ref{sec:discussion} their interpretation.
@@ -130,10 +131,11 @@ percentile, pooling a $\pm15$-day window over all years. Following run theory \c
 event is a run of at least 30 consecutive days below the 20th percentile; runs separated by fewer than
 30 days are merged, and an event is kept only if the preceding 60 days were not in drought. The onset is
 the first day of the run. The target is therefore agricultural drought, defined independently of the
-precipitation detectors and of the networks. The events recover the well-documented droughts of the
-study period, for example onsets in October 2010 in central Texas \citep{hoerling2013}, July 2018 in
-Germany, 2018--2019 in south-eastern Australia and late 2020 in Taiwan
-(Fig.~\ref{fig:traces}). Reanalysis soil moisture is itself a model product forced partly by
+precipitation detectors and of the networks. The reference events include onsets in October 2010 in
+central Texas, at the start of the driest 12-month period on record there \citep{hoerling2013}; in late
+June 2018 in Germany, during the 2018--2019 central European drought \citep{hari2020}; in 2018 and 2019
+in south-eastern Australia, during the 2017--2019 drought \citep{devanand2024}; and in October 2020 in
+Taiwan, ahead of the spring 2021 drought \citep{chou2022} (Fig.~\ref{fig:traces}). Reanalysis soil moisture is itself a model product forced partly by
 precipitation, and we return to this limitation in Section~\ref{sec:limits}.
 
 \subsection{Study periods}
@@ -148,18 +150,21 @@ three years of which serve as an early-stopping validation set. Alarm thresholds
 \begin{tikzpicture}[node distance=6mm and 7mm, every node/.style={font=\footnotesize},
  box/.style={draw,rounded corners,align=center,minimum height=10mm,text width=24mm},
  arr/.style={-{Stealth[length=2mm]},thick}]
- \node[box] (p) {Daily precipitation\\$x_{t-29:t}$ (30-day window)};
- \node[box,right=of p] (h) {Elman RNN\\states $h_{t-29},\dots,h_t$};
+ \node[box] (p) {Daily precipitation\\$x_{t-29:t}$\\(30-day window)};
+ \node[box,right=of p] (h) {Elman RNN\\states $h_{t-29:t}$};
  \node[box,right=of h] (f) {Next-day forecast\\$\hat y_{t+1}$};
+ \node[box,below=of p] (s) {SPI-90, SPI-30,\\SPI-3 (gamma fits)};
  \node[box,below=of h] (g) {Backward projector\\$g_\phi(h_t)\approx h_{t-1}$};
  \node[box,right=of g] (d) {Defect $d_t$\\deseasonalised $z_t$};
- \node[box,right=of d] (c) {CUSUM alarm\\matched budget};
- \node[box,below=of p] (s) {SPI-90, SPI-30,\\SPI-3 (gamma fits)};
- \node[box,below=of d] (e) {Reference onsets\\(root-zone soil moisture)};
+ \node[box,right=of d] (c) {Alarms at a\\matched budget};
+ \node[box,below=14mm of d] (e) {Reference onsets\\(root-zone soil moisture)};
  \node[box,right=of e] (v) {Event scoring:\\POD, FAR, timing};
  \draw[arr] (p)--(h); \draw[arr] (h)--(f); \draw[arr] (h)--(g); \draw[arr] (g)--(d); \draw[arr] (d)--(c);
- \draw[arr] (c)--(v); \draw[arr] (e)--(v);
- \draw[arr] (p)--(s); \draw[arr] (s.south) |- ++(0,-0.5) -| (v.south);
+ \draw[arr] (p)--(s); \draw[arr] (e)--(v);
+ \coordinate (cin) at ([xshift=-6mm]c.south); \coordinate (cout) at ([xshift=6mm]c.south);
+ \coordinate (lvl) at ([yshift=-7mm]c.south);
+ \draw[arr] (s.south) |- (cin |- lvl) -- (cin);
+ \draw[arr] (cout) -- (cout |- v.north);
 \end{tikzpicture}
 \caption{Model, detectors and evaluation. Forecast accuracy and monitoring skill are evaluated
 separately; reference events come from a variable that no detector uses}\label{fig:workflow}
@@ -191,9 +196,9 @@ the monitoring statistic
 available once day $t$ has been observed. While the training regime persists, $\log d_t$ fluctuates
 around a stable seasonal level; a persistent change in the input regime moves the state to a part of
 the state space where the reconstruction error differs systematically. The direction of that shift is
-empirical. In our exploratory work the defect fell during dry spells, because a near-constant input
-drives the state towards a near-stationary point that is easy to reconstruct, so the downward
-direction was pre-specified. Whether a smoother state path improves monitoring is not assumed but
+empirical. In our exploratory work the defect fell during dry spells, which we attributed to a
+near-constant input driving the state towards a near-stationary point that is easy to reconstruct; the
+downward direction was therefore pre-specified. Whether a smoother state path improves monitoring is not assumed but
 tested by the ablation below.
 
 \paragraph{Training.} The penalty weight is $\lambda=0$ for three warm-up epochs and then decays
@@ -238,8 +243,9 @@ burst of alarms. D4 alarms when SPI-3 first falls to or below a threshold $c$ (o
 with the same refractory period.
 
 \subsection{Calibration at a matched alarm budget}\label{sec:calibration}
-Nominal in-control average run lengths are unreliable here: the scores are autocorrelated and
-seasonally heteroscedastic, and the calibration years contain droughts of their own. We therefore
+Nominal in-control average run lengths need not give comparable alarm rates here, because the scores
+are autocorrelated and seasonally heteroscedastic and the calibration years contain droughts of their
+own. We therefore
 compare detectors at a matched \emph{alarm budget}. For each region and detector, the threshold $h$ (or
 $c$) is chosen on a fine grid so that the detector raises, pooled over stations, $\beta$ alarms per
 station-year during 1991--2000. The primary budget is $\beta=1$; $\beta=0.5$ and $\beta=2$ are
@@ -313,7 +319,8 @@ backbone, where the hidden-state scale is comparable.
 \subsection{Software}\label{sec:software}
 All analyses were run in Python (PyTorch, NumPy, SciPy, statsmodels, scikit-learn and Numba); every
 table and every number quoted in the text is generated directly from the result files by the published
-code. AI tools were used to assist with code development and language editing; the authors checked all
+code; the only exceptions are the pilot values in Appendix~\ref{app:protocol}, which are recorded in the
+protocol's deviation log. AI tools were used to assist with code development and language editing; the authors checked all
 code, analyses and results and take full responsibility for them.
 
 % ======================================================================
@@ -335,9 +342,12 @@ across architectures and the GRU values are shown only for completeness.
 \subsection{Warning skill at a matched alarm budget}\label{sec:res_warning}
 Figure~\ref{fig:composites} shows the mean anomalies of the main statistics aligned on the reference
 onsets. In Texas, Germany and Australia the defect declines in the weeks before onset and reaches its
-minimum near onset, earlier than SPI-90, whose minimum lags onset by one to two months. SPI-30 declines
-earlier and further than the defect. In Taiwan the defect shows no consistent signal. The defect and
-its ablation are almost indistinguishable throughout.
+minimum \compDonelaglo--\compDonelaghi\ days after onset, whereas SPI-90 reaches its minimum
+\compDthreelaglo--\compDthreelaghi\ days after onset. SPI-30 falls further than the defect (composite
+minima \compDsevenminlo\ to \compDsevenminhi, against \compDoneminlo\ to \compDoneminhi), with its
+minimum \compDsevenlaglo--\compDsevenlaghi\ days after onset. In Taiwan the defect shows only a brief
+dip at onset (\compDonemintaiwan) and is above zero again 30 days later (\compDonepostaiwan). The defect
+and its ablation are almost indistinguishable throughout.
 
 \begin{figure}[t]
 \centering
@@ -350,10 +360,12 @@ that it shares the vertical scale}\label{fig:composites}
 Table~\ref{tab:warning} gives event-based skill at the primary budget of one alarm per station-year.
 Pooled over regions, the defect detected \podallDone\ of the \nevall\ onsets, against \podallDthree\
 for daily SPI-90, \podallDseven\ for daily SPI-30 and \podallDfour\ for monthly SPI-3; the forecast
-residual detected \podallDfive. False-alarm rates were similar across the daily detectors, as the
-matched budget intends. Monthly SPI-3 performed poorly in Germany and Australia, where its month-end
-updates and the 90-day refractory period make it miss onsets that fall between decisions; with daily
-SPI-90 available, SPI-3 is not the relevant benchmark for a daily monitor.
+residual detected \podallDfive, although its threshold grid could not match the budget within 10\% in
+Texas, Germany and Australia (Table~\ref{tab:warning}). Pooled false-alarm rates were similar across the daily detectors, as
+the matched budget intends, although in Germany the defect raised more false alarms than SPI-90
+(Table~\ref{tab:paired}). Monthly SPI-3 performed poorly in Germany and Australia; a likely reason, which
+we did not test, is that month-end updates combined with the 90-day refractory period miss onsets that
+fall between decisions. For a daily monitor, daily SPI-90 is the more relevant benchmark.
 
 \input{tables/warning.tex}
 
@@ -363,24 +375,27 @@ intervals excluding zero in all but Taiwan), by
 \dpodallDoneDthree\ pooled (95\% CI \dpodloallDoneDthree\ to \dpodhiallDoneDthree), at a similar
 false-alarm rate. On the events both detected, however, the defect alarmed a median of
 \dtimallDoneDthree\ days earlier (CI \dtimloallDoneDthree\ to \dtimhiallDoneDthree), and earlier in
-\fearlyallDoneDthree\% of them. The defect is thus faster but less sensitive. Against monthly SPI-3 it
-detected more onsets (\dpodallDoneDfour) with fewer false alarms. \emph{Does the regularisation
+\fearlyallDoneDthree\% of them. The defect is thus faster but less sensitive. Pooled over regions it
+detected more onsets than monthly SPI-3 (\dpodallDoneDfour) with fewer false alarms, but not in every
+region: in Texas SPI-3 detected more onsets, and in Taiwan the difference was not significant. \emph{Does the regularisation
 matter for monitoring?} No: the defect of the regularised network and of its ablation differed by
 \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to \dpodhiallDoneDtwo) and by a median of
 \dtimallDoneDtwo\ days in timing. \emph{Is the defect's speed a matter of time scale?} Largely yes. SPI-30
 was nearly as sensitive as SPI-90 (difference \dpodallDsevenDthree, CI \dpodloallDsevenDthree\ to
 \dpodhiallDsevenDthree) and alarmed \dtimallDsevenDthree\ days earlier than SPI-90, which accounts for
-most of the defect's \dtimallDoneDthree-day advantage; the defect remained \dtimallDoneDseven\ days
+most of the defect's \dtimallDoneDthree-day advantage (the two timing comparisons are made on different
+sets of jointly detected events); the defect remained \dtimallDoneDseven\ days
 (CI \dtimloallDoneDseven\ to \dtimhiallDoneDseven) faster than SPI-30 but detected fewer onsets
 (\dpodallDoneDseven, CI \dpodloallDoneDseven\ to \dpodhiallDoneDseven).
 
 \input{tables/paired.tex}
 
-The operating curves (Fig.~\ref{fig:amoc}) confirm that these conclusions do not depend on the chosen
-budget: in every region the SPI-90 and SPI-30 curves lie on or above the defect curves over the
-practically relevant range of false-alarm rates, and the curves of the defect and its ablation
-overlap. The results at budgets of 0.5 and 2 alarms per station-year
-(Online Resource 1, Tables~\ref{S-tab:warning05}--\ref{S-tab:warning2}) lead to the same conclusions.
+The operating curves (Fig.~\ref{fig:amoc}) show the same ordering over a range of thresholds: at
+false-alarm rates from 0.5 to 2 per station-year the SPI-90 and SPI-30 curves lie on or above the
+defect curve in every region, and the curves of the defect and its ablation differ by at most
+\amocDoneDtwomaxdiff\ in POD. At budgets of 0.5 and 2 alarms per station-year (Online Resource 1,
+Tables~\ref{S-tab:warning05}--\ref{S-tab:warning2}) the pooled comparisons with SPI-90, SPI-30 and the
+ablation lead to the same conclusions.
 
 \begin{figure}[t]
 \centering
@@ -393,17 +408,22 @@ monotone in the threshold and is shown as points}\label{fig:amoc}
 The post hoc combination D6 detected as many onsets as SPI-90 (difference \dpodallDsixDthree, CI
 \dpodloallDsixDthree\ to \dpodhiallDsixDthree) and alarmed \dtimallDsixDthree\ days earlier on events
 both detected (CI \dtimloallDsixDthree\ to \dtimhiallDsixDthree), with a false-alarm difference of
-\dfarallDsixDthree\ per year. This is a small but consistent gain obtained by adding a short-memory
-component to SPI-90, and it is of the same kind that SPI-30 provides.
+\dfarallDsixDthree\ per year. The timing gain was significant in Texas, Germany and Australia but not
+in Taiwan. It is a small gain from adding a short-memory component to SPI-90, comparable to what SPI-30
+provides.
 
-Figure~\ref{fig:traces} shows four documented droughts. In the 2010--2011 Texas, 2018 German and
-2018--2019 Australian droughts the defect alarmed at or shortly after onset, before SPI-90; SPI-30
-alarmed at a similar time or shortly after. In the 2020--2021 Taiwan drought the defect did not alarm.
+Figure~\ref{fig:traces} shows the droughts cited in Section~\ref{sec:events} at one station each,
+chosen for illustration rather than as a test. In the Texas, German and Australian cases the defect
+alarmed \traceDonelaglo--\traceDonelaghi\ days after the reference onset and
+\traceDthreeminusDonelo--\traceDthreeminusDonehi\ days before SPI-90, and SPI-30 alarmed
+\traceDsevenminusDonelo--\traceDsevenminusDonehi\ days after the defect. In the Taiwan case the defect
+did not alarm, whereas SPI-30 alarmed \traceDseventaiwan\ day before the onset and SPI-90
+\traceDthreetaiwan\ days after it.
 
 \begin{figure}[p]
 \centering
 \includegraphics[width=\textwidth]{event_traces.pdf}
-\caption{Four documented droughts at representative stations. Lines: 30-day running means of the
+\caption{Four droughts at illustrative stations. Lines: 30-day running means of the
 daily anomalies of the defect (D1), SPI-90 and SPI-30; triangles: alarms of each detector at the
 primary budget; shading: root-zone soil wetness below the 20th percentile (right axis: percentile);
 dashed lines: reference onsets. Gaps in SPI-30 are days with fewer than 27 observed days in the
@@ -414,13 +434,13 @@ window}\label{fig:traces}
 The defect anomaly rose and fell with SPI-3 in every region, and in Texas, Australia and Taiwan it was
 also associated with root-zone soil moisture after adjusting for SPI-3, temperature and
 evapotranspiration (Table~\ref{tab:assoc}, Fig.~\ref{fig:assoc}). It was negatively associated with
-evapotranspiration in Germany, Australia and Taiwan. Together with station effects, these anomalies explain between a fifth and
-more than a third of the within-station variation of the monthly defect. Its ablation has nearly identical
-coefficients, so the association is a property of the recurrent state summarising recent precipitation,
-not of the regularisation. Because the network sees precipitation only, the soil-moisture association
-beyond SPI-3 most plausibly reflects the sub-seasonal timing of rainfall within the three-month window,
-to which a 30-day recurrent summary is sensitive and SPI-3 is not; we do not interpret it as evidence that
-the network infers land-surface processes.
+evapotranspiration in Germany, Australia and Taiwan. These anomalies explain between a fifth and more
+than a third of the within-station variation of the monthly defect ($R^2_w$ in Table~\ref{tab:assoc}).
+Its ablation has nearly identical coefficients, so the association does not depend on the
+regularisation. Because the network sees precipitation only, the soil-moisture association beyond SPI-3
+may reflect the sub-seasonal timing of rainfall within the three-month window, to which a 30-day
+recurrent summary is sensitive and SPI-3 is not. We did not test this explanation, and we do not
+interpret the association as evidence that the network infers land-surface processes.
 
 \input{tables/assoc.tex}
 
@@ -431,27 +451,29 @@ the network infers land-surface processes.
 regressions of the defect anomaly, by region}\label{fig:assoc}
 \end{figure}
 
-Predicting onset within 60 days is hard for any precipitation statistic: the cross-validated AUC of
-SPI-90 alone ranged from 0.43 in Taiwan, where wet antecedent conditions often precede the dry season,
-to 0.59 in Australia (Table~\ref{tab:incremental}). Adding the 30-day mean defect raised the pooled AUC
+Predicting onset within 60 days was hard for every precipitation statistic we tested: the cross-validated AUC of
+SPI-90 alone ranged from \aucbasetaiwan\ in Taiwan, below the chance level of 0.5, to \aucbaseaustralia\
+in Australia (Table~\ref{tab:incremental}). Adding the 30-day mean defect raised the pooled AUC
 by \daucallDone\ (CI \daucloallDone\ to \dauchiallDone), and the ablation defect by a similar
 amount. Adding SPI-30 instead raised it by \daucallSPIthirty, and once SPI-30 was included the defect
 added nothing (\daucallSPIthirtypDone, CI \daucloallSPIthirtypDone\ to \dauchiallSPIthirtypDone), in
 every region. The 30-day mean forecast residual, itself a short-window precipitation anomaly, added
-\daucallDfive. The information the defect carries about impending onset is real but is contained in a
-30-day precipitation summary.
+\daucallDfive. The defect thus carries statistically detectable information about impending onset, but
+in these data that information is contained in a 30-day precipitation summary.
 
 \input{tables/incremental.tex}
 
 \subsection{Temperature-aware networks}\label{sec:mv}
-Daily temperature was available for \mvnst\ of the \nstall\ stations (all of Texas, Germany and Taiwan;
-\mvnstaustralia\ of 40 in Australia, where donor stations lie a median of 82~km away), with \mvnevall\
-reference onsets in 2001--2024. Temperature improved the network as a forecaster: the mean
-precipitation MSESS rose to \mvmsss, from 0.086 for the precipitation-only networks on all stations
-(Online Resource 1, Table~\ref{S-tab:forecastmv}). The penalty again reduced the path increment, by
+Daily temperature was available for \mvnst\ of the \nstall\ stations (all stations in Texas, Germany
+and Taiwan and \mvnstaustralia\ of 40 in Australia), with \mvnevall\ reference onsets in 2001--2024.
+Donor records were used at \ndonortexas, \ndonorgermany\ and \ndonoraustralia\ of these stations in
+Texas, Germany and Australia, at median distances of \kmdonortexas, \kmdonorgermany\ and
+\kmdonoraustralia~km. Temperature improved the network as a forecaster: on the same \mvnst\ stations
+the mean precipitation MSESS rose from \mvmsssp\ to \mvmsssmv, with an increase in every region and at
+\mvmsssfrac\% of stations (Online Resource 1, Table~\ref{S-tab:forecastmv}). The penalty again reduced the path increment, by
 \mvqpathred\%, and kept precipitation forecast error equivalent to the ablation (90\% CI \mvmselo\% to
 \mvmsehi\%). Against a temperature-aware GRU the RMRNN was within the $\pm2\%$ margin in Texas, Germany
-and Taiwan but not in Australia, where the GRU was about 1.8\% better.
+and Taiwan but not in Australia, where the GRU's mean squared error was \mvgruaustralia\% lower.
 
 As a monitoring statistic, however, the temperature-aware defect was weaker, not stronger
 (Tables~\ref{tab:warningmv} and~\ref{tab:pairedmv}). Pooled over regions it detected \mvpodallDeight\ of
@@ -469,18 +491,21 @@ on jointly detected events.
 \input{tables/warning_mv.tex}
 \input{tables/paired_mv.tex}
 
-The composites (Fig.~\ref{fig:compositesmv}) show why. The temperature-aware defect barely moves at
-onset in any region, whereas the precipitation-only defect dips. Its association with concurrent
+The composites (Fig.~\ref{fig:compositesmv}) are consistent with this. In the four regions the composite
+minimum of the temperature-aware defect lies between \compmvDeightminlo\ and \compmvDeightminhi, against
+\compmvDoneminlo\ to \compmvDoneminhi\ for the precipitation-only defect on the same stations. Its association with concurrent
 anomalies is weak (within-station $R^2$ of \mvassocrtwotexas--\mvassocrtwogermany\ across regions;
 Online Resource 1, Table~\ref{S-tab:assocmv}) and of inconsistent sign for temperature, positive in Germany and
 Australia and negative in Texas. In predicting onset within 60 days it added nothing to SPEI-90, SPEI-30
 and SPI-30 together (\mvdaucallbasepDeight, CI \mvdaucallbasepDeightlo\ to \mvdaucallbasepDeighthi;
 Table~\ref{tab:incrementalmv}). A descriptive check also shows that the out-of-sample anomaly of the
-temperature-aware defect sits 0.15--0.19 standard deviations above its 1961--1990 level in 2001--2024
-in every region (Online Resource 1, Table~\ref{S-tab:drift}). This coincides with 2-m temperature anomalies of 0.18--0.34
-standard deviations, but in Texas and Germany the shift is already present in 1991--2000, so out-of-sample error
-of the backward projector contributes as well; a reference level that drifts in this way inflates false
-alarms and dilutes the onset signal.
+temperature-aware defect sits \driftDeightlo--\driftDeighthi\ standard deviations above its 1961--1990
+level in 2001--2024 in every region (Online Resource 1, Table~\ref{S-tab:drift}). This coincides with
+2-m temperature anomalies of \drifttlo--\driftthi\ standard deviations. In Texas and Germany, however,
+the shift is already present in 1991--2000 (\driftDeightcaltexas\ and \driftDeightcalgermany), when the
+temperature anomalies were \drifttcaltexas\ and \drifttcalgermany, so out-of-sample error of the
+backward projector may contribute as well. Because the CUSUM looks for downward shifts, an upward drift
+of this kind works against detection.
 
 \input{tables/incremental_mv.tex}
 
@@ -488,8 +513,8 @@ alarms and dilutes the onset signal.
 \centering
 \includegraphics[width=\textwidth]{event_composites_mv.pdf}
 \caption{Temperature-aware subset (\mvnst\ stations): mean anomalies aligned on reference onsets.
-The temperature-aware defect (D8) shows little response at onset; the precipitation-only defect (D1)
-and SPEI do}\label{fig:compositesmv}
+The temperature-aware defect (D8) responds much less at onset than the precipitation-only defect (D1)
+and SPEI}\label{fig:compositesmv}
 \end{figure}
 
 \FloatBarrier
@@ -499,56 +524,63 @@ and SPEI do}\label{fig:compositesmv}
 The study separates three claims that are easily conflated. The first concerns forecasting: a
 backward-coherence penalty smooths the recurrent state path by about a quarter without changing
 next-day forecast error by more than a fraction of a percent. This is established by equivalence tests
-on 133 stations, and it holds for the temperature-aware networks too. The second concerns monitoring: the defect of such a network is a legitimate drought
-indicator, which declines during droughts, is associated with soil moisture, alarms before SPI-90 when
-both detect an onset and detects more onsets than the monthly SPI-3. The third concerns added value, and
+on \nstall\ stations, and it holds for the temperature-aware networks too. The second concerns
+monitoring: the defect of such a network carries a drought signal. It declines towards onset, clearly
+in three of the four regions and only briefly in Taiwan; it is associated with SPI-3 in every region and with soil moisture beyond SPI-3
+in three; it alarms before SPI-90 when both detect an onset; and, pooled over regions, it detects more
+onsets than monthly SPI-3. The third concerns added value, and
 here the evidence is negative. At a matched alarm budget the defect detects fewer onsets than daily
 SPI-90 or SPI-30, its timing advantage over SPI-90 is mostly reproduced by SPI-30, and it adds no
 predictive information once SPI-30 is known. Most importantly for the method, the regularisation is not what makes
-the defect work: the unregularised ablation performs the same. A smoother state path did not translate
+the defect work: the unregularised ablation performs indistinguishably. A smoother state path did not translate
 into a better monitoring statistic.
 
-A simple explanation fits these results. A recurrent network that sees a 30-day window encodes recent
-precipitation; when a dry spell sets in, its state drifts towards the attractor reached under
-near-zero input, where backward reconstruction is easy, and the defect falls. This is a nonlinear,
-short-memory summary of recent precipitation, comparable in time scale to SPI-30 but noisier, because
-the network was trained to forecast tomorrow's rain rather than to measure deficits. The penalty
-regularises how the state moves, not what it encodes, so it leaves this mechanism unchanged.
+One explanation is consistent with these results, although we did not test it directly. A recurrent
+network that sees a 30-day window encodes recent precipitation; when a dry spell sets in, its state may
+move towards the region of state space reached under near-zero input, where backward reconstruction is
+easy, and the defect falls. On this reading the defect is a nonlinear, short-memory summary of recent
+precipitation. The results show it to be comparable in timing to SPI-30 but less sensitive, possibly
+because the network was trained to forecast tomorrow's rain rather than to measure deficits. The penalty
+constrains how the state moves rather than what it encodes, which would explain why the ablation
+behaves the same.
 
-The temperature-aware extension supports this reading. Giving the network temperature and evaporative
-demand, and asking it to forecast evaporative demand as well, made it a better precipitation forecaster
-but a worse monitor. Its state now tracks several slowly varying, seasonally structured inputs, so a dry
-spell no longer drives it to a distinctive, easily reconstructed configuration, and the onset signal of
-the precipitation-only defect is diluted. In addition, the reference level of the defect drifted out of
-sample, partly with the warming of the evaluation period, which a monitor standardised on 1961--1990 cannot
-absorb. A learned state does not become a better drought statistic merely because it receives more
-drought-relevant inputs; what it encodes is determined by its training objective, which here is
-forecasting.
+The temperature-aware extension is consistent with this reading. Giving the network temperature and
+evaporative demand, and asking it to forecast evaporative demand as well, made it a better precipitation
+forecaster but a worse monitor. A plausible but untested explanation is that its state now tracks
+several slowly varying, seasonally structured inputs, so that a dry spell no longer drives it to a
+distinctive, easily reconstructed configuration. In addition, the reference level of the defect drifted
+upwards out of sample, together with warmer 2-m temperatures but in Texas and Germany already in
+1991--2000, and a monitor standardised on 1961--1990 does not adjust for such drift. In this case,
+giving the learned state more drought-relevant inputs did not make it a better drought statistic; what
+the state encodes is shaped by its training objective, which here is forecasting.
 
 \subsection{Implications for learned monitoring statistics}
-The design choices that changed our conclusions relative to the exploratory study are general. Using
+The design choices that changed our conclusions relative to the exploratory study are not specific to
+this method. Using
 an independently defined event set rather than one detector's alarm as the reference avoids rewarding
 whichever detector is fastest. Matching alarm budgets prevents a detector from appearing earlier
-because it alarms more often; with nominal ARL calibration on autocorrelated, seasonal data, this
-equality does not hold. Comparing timing on jointly detected events avoids selection effects. Including
+because it alarms more often; nominal ARL calibration on autocorrelated, seasonal data need not
+equalise alarm rates. Comparing timing on jointly detected events avoids selection effects. Including
 the ablation and a comparator with the same time scale as the learned model's memory exposes whether a
 learned statistic contributes more than its receptive field. Resampling years rather than station-events
-is essential: with spatially correlated stations, naive intervals would be several times too narrow.
-These elements apply unchanged to other learned monitoring statistics, such as autoencoder
-reconstruction errors or forecast residuals of deep models.
+matters: here the year-cluster intervals for POD were \ciratiolo--\ciratiohi\ times as wide as naive
+binomial intervals within regions, and \ciratioall\ times as wide for the pooled defect. These elements
+can be applied unchanged to other learned monitoring statistics, such as autoencoder reconstruction
+errors or forecast residuals of deep models.
 
 The constructive outcome is modest. Combining the defect with SPI-90 kept SPI-90's sensitivity and
-advanced alarms by about five days; SPI-30 achieves much the same. In operational monitoring, where
-SPI at several time scales is routinely computed, a learned hidden-state statistic of this kind is
-unlikely to justify its cost. Supplying the network with temperature and evaporative demand, the
-information that SPEI adds to SPI \citep{vicenteserrano2010}, did not change this conclusion. A learned
-statistic would more plausibly help if the network were trained for the monitoring task itself, for
-example to predict future deficits or a drought indicator, rather than tomorrow's rainfall; that is a
-different method and would need its own pre-specified evaluation.
+advanced alarms by a median of \dtimallDsixDthree\ days; SPI-30 achieves much the same. Where SPI at
+several time scales is already computed, our results give no reason to add a learned hidden-state
+statistic of this kind. Supplying the network with temperature and evaporative demand, the information
+that SPEI adds to SPI \citep{vicenteserrano2010}, did not change this conclusion. A learned statistic
+might help if the network were trained for the monitoring task itself, for example to predict future
+deficits or a drought indicator, rather than tomorrow's rainfall; that is a different method, not
+tested here, and would need its own pre-specified evaluation.
 
 \subsection{Limitations}\label{sec:limits}
 The reference events come from reanalysis soil moisture, which is a model product partly forced by
-precipitation. This favours precipitation-based detectors in general but not one over another, and it
+precipitation. This may favour precipitation-based detectors, and not necessarily equally, since their
+time scales may match the memory of the reanalysis land-surface model to different degrees; it also
 targets agricultural rather than hydrological drought; other references, such as streamflow or official
 drought assessments like the U.S. Drought Monitor \citep{svoboda2002}, may rank detectors differently. The networks use one architecture with a 30-day window and 32 hidden units; longer windows or gated
 cells could change the defect. The temperature-aware analysis covers \mvnst\ of the stations, uses donor
@@ -562,8 +594,9 @@ before it was run.
 
 \section{Conclusions}\label{sec:conclusion}
 A backward-coherence penalty makes the hidden-state path of a recurrent precipitation model smoother
-without affecting forecast accuracy, and the reconstruction defect of the model is a valid,
-soil-moisture-related drought indicator that alarms earlier than SPI-90 when both detect an onset. Under
+without affecting forecast accuracy, and the reconstruction defect of the model carries a drought
+signal: it is associated with SPI-3, and in three of four regions with soil moisture, and it alarms
+earlier than SPI-90 when both detect an onset. Under
 a pre-specified evaluation with independent events, matched alarm budgets and dependence-aware
 inference, however, the defect detects fewer droughts than daily SPI, its speed is largely that of a
 30-day precipitation summary, and the regularisation does not improve it. Giving the network temperature

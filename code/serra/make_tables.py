@@ -530,11 +530,80 @@ Region & $n$ & MSESS & $\Delta$MSE vs $\lambda=0$ (\%) & $\Delta$MSE vs GRU (\%)
         open(os.path.join(T, "forecast_mv.tex"), "w").write(tex)
 
 
+def check_macros():
+    """Macros for descriptive statements in the text (results/checks/, written by text_checks.py).
+    The assertions stop the build if a sentence in the paper would no longer match the results."""
+    C = os.path.join(ROOT, "results", "checks")
+    if not os.path.exists(os.path.join(C, "composites.csv")):
+        return
+    f1 = lambda v: f"{v:.1f}"; f2 = lambda v: f"{v:.2f}"
+    rng = lambda name, s, fmt: (mac(name + "lo", fmt(s.min())), mac(name + "hi", fmt(s.max())))
+    # event-aligned composites (Fig. composites, Fig. compositesmv)
+    K = pd.read_csv(os.path.join(C, "composites.csv"))
+    P = K[(K.subset == "panel") & (K.region != "taiwan")]
+    g = lambda d: P[P.det == d]
+    rng("compDonelag", g("D1").min_lag, str); rng("compDthreelag", g("D3").min_lag, str)
+    rng("compDsevenlag", g("D7").min_lag, str)
+    rng("compDonemin", g("D1").min_value, f2); rng("compDsevenmin", g("D7").min_value, f2)
+    assert (g("D1").min_lag.abs() <= 7).all() and (g("D3").min_lag >= 28).all()
+    assert (g("D7").min_value.values < g("D1").min_value.values).all()
+    assert (g("D1")["v-30"].values < g("D1")["v-60"].values).all()
+    tw = K[(K.subset == "panel") & (K.region == "taiwan") & (K.det == "D1")].iloc[0]
+    mac("compDonemintaiwan", f2(tw.min_value)); mac("compDonelagtaiwan", str(tw.min_lag))
+    mac("compDonepostaiwan", f2(tw["v+30"]))
+    M = K[K.subset == "panel_mv"]
+    rng("compmvDeightmin", M[M.det == "D8"].min_value, f2); rng("compmvDonemin", M[M.det == "D1"].min_value, f2)
+    assert M[M.det == "D8"].min_value.min() > M[M.det == "D1"].min_value.max()
+    # operating curves (Fig. amoc)
+    A = pd.read_csv(os.path.join(C, "amoc_compare.csv")).pivot_table(index=["region", "far"], columns="det", values="pod")
+    mid = A[A.index.get_level_values("far") >= 0.5]
+    assert ((mid.D3 >= mid.D1) & (mid.D7 >= mid.D1)).all()
+    mac("amocDoneDtwomaxdiff", f2((A.D1 - A.D2).abs().max()))
+    # station traces (Fig. traces)
+    R = pd.read_csv(os.path.join(C, "trace_alarms.csv")).pivot_table(index=["region", "onset"], columns="det",
+                                                                        values="first_alarm_lag")
+    ok = R.drop(index="taiwan", level="region")
+    assert ok.D1.notna().all() and (ok.D1 <= ok.D3).all()
+    rng("traceDonelag", ok.D1, lambda v: f"{v:.0f}"); rng("traceDthreeminusDone", ok.D3 - ok.D1, lambda v: f"{v:.0f}")
+    assert (ok.D7 > ok.D1).all()
+    rng("traceDsevenminusDone", ok.D7 - ok.D1, lambda v: f"{v:.0f}")
+    tr = R.loc["taiwan"].iloc[0]
+    assert np.isnan(tr.D1) and tr.D7 < 0 < tr.D3     # text: SPI-30 before onset, SPI-90 after
+    mac("traceDseventaiwan", f"{-tr.D7:.0f}"); mac("traceDthreetaiwan", f"{tr.D3:.0f}")
+    # dependence: year-cluster vs naive binomial interval width
+    W = pd.read_csv(os.path.join(C, "ci_width.csv")); W = W[W.det.isin(["D1", "D3"])]
+    mac("ciratioall", f1(W[(W.group == "all") & (W.det == "D1")].ratio.iloc[0]))
+    rng("ciratio", W[W.group != "all"].ratio, f1)
+    # same-station forecast skill
+    S = pd.read_csv(os.path.join(C, "msss_same.csv")).set_index("region")
+    mac("mvmsssp", f"{S.loc['all'].msss_p:.3f}"); mac("mvmsssmv", f"{S.loc['all'].msss_mv:.3f}")
+    mac("mvmsssfrac", f"{100*S.loc['all'].frac_improved:.0f}")
+    assert (S.msss_mv > S.msss_p).all()
+    # temperature donors
+    D = pd.read_csv(os.path.join(C, "donors.csv")).set_index("region")
+    for r in ["texas", "germany", "australia"]:
+        mac(f"ndonor{r}", str(int(D.loc[r].n_donor))); mac(f"kmdonor{r}", f"{D.loc[r].median_donor_km:.0f}")
+    # base AUC of SPI-90 alone (Table incremental), GRU gap in Australia, drift
+    I = pd.read_csv(os.path.join(ROOT, "results", "covariates", "incremental.csv"))
+    for r in REGIONS:
+        mac(f"aucbase{r}", f2(I[(I.group == r) & (I.added == "D1")].auc_base.iloc[0]))
+    FP = pd.read_csv(os.path.join(ROOT, "results", "forecast_mv", "paired.csv"))
+    x = FP[(FP.group == "australia") & (FP.comp == "rmrnn-gru") & (FP.metric == "mse")].iloc[0]
+    mac("mvgruaustralia", f1(100 * x.mean_rel_diff)); assert x.ci90_lo > 0
+    Dr = pd.read_csv(os.path.join(ROOT, "results", "warning_mv", "drift.csv")).set_index(["region", "score"])
+    d8 = Dr.xs("D8", level="score"); tt = Dr.xs("t2m_a", level="score")
+    rng("driftDeight", d8.mean_2001_2024, f2); rng("driftt", tt.mean_2001_2024, f2)
+    assert (d8.lo > 0).all()
+    for r in ["texas", "germany"]:
+        mac(f"driftDeightcal{r}", f2(d8.loc[r].mean_1991_2000)); mac(f"drifttcal{r}", f2(tt.loc[r].mean_1991_2000))
+
+
 if __name__ == "__main__":
     os.makedirs(T, exist_ok=True)
     data_table(); forecast_table(); warning_table(); paired_table(); covariate_tables(); threshold_table()
     mv_tables()
     warning_table(0.5, "warning_b05.tex", "tab:warning05", ("D1", "D2", "D3", "D4", "D5", "D7"))
     warning_table(2.0, "warning_b2.tex", "tab:warning2", ("D1", "D2", "D3", "D4", "D5", "D7"))
+    check_macros()
     open(os.path.join(T, "numbers.tex"), "w").write("% generated by code/serra/make_tables.py\n" + "\n".join(MACROS) + "\n")
     print(len(MACROS), "macros")

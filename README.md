@@ -10,7 +10,7 @@ All numbers come from new analyses run in this folder; nothing is carried over
 from the earlier submission.
 
 ## Files
-- `tex/RM_Precipitation_SERRA.pdf` — main paper (24 pp, Springer Nature `sn-jnl`,
+- `tex/RM_Precipitation_SERRA.pdf` — main paper (26 pp, Springer Nature `sn-jnl`,
   line numbers on).
 - `tex/RM_Precipitation_SERRA_supplement.pdf` — Online Resource 1 (6 pp).
 - `tex/tables/*.tex` and `tex/tables/numbers.tex` are **generated** by
@@ -34,7 +34,7 @@ python3 code/serra/covariate_analysis.py
 python3 code/build_temperature.py && python3 code/serra/train_models_mv.py && python3 code/serra/build_scores_mv.py
 python3 code/serra/evaluate_warning.py --mv && python3 code/serra/forecast_eval.py --mv
 python3 code/serra/covariate_analysis_mv.py && python3 code/serra/drift_mv.py
-python3 code/serra/make_tables.py && python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv
+python3 code/serra/text_checks.py && python3 code/serra/make_tables.py && python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv
 ```
 
 ## What the new evidence says (stated in the paper)
