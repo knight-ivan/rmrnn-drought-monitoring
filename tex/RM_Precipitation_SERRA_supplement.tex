@@ -1,0 +1,64 @@
+\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\graphicspath{{../figures/}}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xr-hyper}
+\externaldocument[M-]{RM_Precipitation_SERRA}
+\input{tables/numbers.tex}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thesection}{S\arabic{section}}
+\raggedbottom
+
+\begin{document}
+\title[Online Resource 1]{Online Resource 1: Supplementary Material for ``Can the hidden state of a
+recurrent precipitation model monitor drought onset? A pre-specified event-based evaluation of
+backward-coherence regularisation'', \emph{Stochastic Environmental Research and Risk Assessment}}
+\author[1]{\fnm{Hui-Mean} \sur{Foo}}\email{huimean87@gmail.com}
+\author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}}\email{ycchang@as.edu.tw}
+\affil[1]{\orgdiv{Institute of Statistical Science}, \orgname{Academia Sinica},
+\orgaddress{\city{Taipei}, \postcode{11529}, \country{Taiwan}}}
+\abstract{Warning results at alternative alarm budgets, additional results of the temperature-aware
+analysis, calibration diagnostics, and a description of the code, data and reproduction steps.}
+\maketitle
+
+\section{Warning skill at alternative alarm budgets}\label{sec:budgets}
+Tables~\ref{tab:warning05} and~\ref{tab:warning2} repeat Table~\ref{M-tab:warning} of the main paper at budgets of 0.5
+and 2 alarms per station-year. Timing is reported for the primary budget only. At two alarms per
+station-year, the month-end SPI-3 rule and, in Texas, daily SPI-90 cannot attain the budget within the
+calibration grid; their entries use the closest attainable rate and are flagged.
+
+\input{tables/warning_b05.tex}
+\input{tables/warning_b2.tex}
+
+\section{Temperature-aware analysis: additional results}\label{sec:mvsupp}
+\input{tables/forecast_mv.tex}
+\input{tables/assoc_mv.tex}
+\input{tables/drift_mv.tex}
+
+\section{Calibration diagnostics}\label{sec:calib}
+\input{tables/thresholds.tex}
+
+\section{Code, data and reproduction}\label{sec:code}
+All analyses are driven by the scripts in \texttt{code/}:
+\begin{enumerate}
+\item \texttt{fetch\_ghcnd\_long.py}, \texttt{build\_taiwan.py} (with the archived
+\texttt{fetch\_taiwan\_hydromet.py}) and \texttt{fetch\_power.py} download and assemble the gauge records
+and the MERRA-2 covariates and apply the completeness rules.
+\item \texttt{serra/train\_models.py} trains the regularised network, its $\lambda=0$ ablation and the
+GRU (five seeds per station) and stores daily forecasts, defects and path increments.
+\item \texttt{serra/build\_scores.py} computes the detector scores, SPI-90, SPI-3, soil-moisture
+percentiles and reference events; \texttt{serra/add\_spi30.py} adds the post hoc SPI-30.
+\item \texttt{serra/evaluate\_warning.py}, \texttt{serra/forecast\_eval.py} and
+\texttt{serra/covariate\_analysis.py} produce all results; \texttt{build\_temperature.py},
+\texttt{serra/train\_models\_mv.py}, \texttt{serra/build\_scores\_mv.py}, \texttt{serra/covariate\_analysis\_mv.py}
+and \texttt{serra/drift\_mv.py} (with the \texttt{--mv} option of the evaluation scripts) carry out the
+temperature-aware analysis; \texttt{serra/make\_tables.py} writes every
+table and every number quoted in the text; \texttt{serra/figures.py} draws the figures.
+\end{enumerate}
+The pre-specified protocol and its deviation log are in \texttt{PROTOCOL.md}. Training all models took
+about one hour (precipitation-only) and one hour (temperature-aware) on a 16-core workstation.
+
+\end{document}

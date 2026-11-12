@@ -1,0 +1,53 @@
+\begin{table}[t]
+\caption{Next-day forecast accuracy on 2001--2024 (station means over five seeds, then averaged
+over stations). MSE and MAE refer to standardised $\log(1+P)$; MSESS is the MSE skill score relative
+to day-of-year climatology; AUC is for exceeding the station's 1961--1990 95th percentile;
+$Q_{\mathrm{path}}$ is the mean hidden-state path increment over a 30-day window.}
+\label{tab:forecast}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}llrrrrr}
+\toprule
+Region & Model & MSE & MSESS & MAE & AUC & $Q_{\mathrm{path}}$\\
+\midrule
+Central Texas & RMRNN & 0.971 & 0.054 & 0.618 & 0.656 & 12.4 \\
+ & $\lambda=0$ & 0.973 & 0.053 & 0.620 & 0.654 & 16.0 \\
+ & GRU & 0.973 & 0.053 & 0.620 & 0.658 & 8.6 \\
+\midrule
+Germany & RMRNN & 0.916 & 0.103 & 0.758 & 0.671 & 17.6 \\
+ & $\lambda=0$ & 0.917 & 0.103 & 0.759 & 0.671 & 23.0 \\
+ & GRU & 0.916 & 0.103 & 0.758 & 0.671 & 13.2 \\
+\midrule
+SE Australia & RMRNN & 0.924 & 0.070 & 0.601 & 0.665 & 12.1 \\
+ & $\lambda=0$ & 0.925 & 0.069 & 0.600 & 0.663 & 16.3 \\
+ & GRU & 0.924 & 0.070 & 0.600 & 0.667 & 9.2 \\
+\midrule
+Taiwan & RMRNN & 0.782 & 0.176 & 0.670 & 0.806 & 16.6 \\
+ & $\lambda=0$ & 0.782 & 0.176 & 0.670 & 0.805 & 21.2 \\
+ & GRU & 0.780 & 0.178 & 0.668 & 0.806 & 13.7 \\
+\midrule
+All regions & RMRNN & 0.922 & 0.086 & 0.660 & 0.678 & 14.3 \\
+ & $\lambda=0$ & 0.923 & 0.085 & 0.661 & 0.677 & 18.7 \\
+ & GRU & 0.922 & 0.085 & 0.660 & 0.679 & 10.7 \\
+\botrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[t]
+\caption{Paired station-level comparisons of RMRNN. MSE differences are mean relative differences (\%)
+with 90\% confidence intervals, which coincide with the TOST equivalence test at level 0.05: an interval
+inside $\pm2\%$ establishes equivalence. $Q_{\mathrm{path}}$: median relative change (\%) against the
+$\lambda=0$ ablation with its Wilcoxon signed-rank $p$-value.}
+\label{tab:forecastpaired}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrccrr}
+\toprule
+Region & $n$ & $\Delta$MSE vs $\lambda=0$ (\%) & $\Delta$MSE vs GRU (\%) & $\Delta Q_{\mathrm{path}}$ (\%) & $p$\\
+\midrule
+Central Texas & 40 & $-$0.13 [$-$0.22, $-$0.05] & $-$0.15 [$-$0.28, $-$0.02] & $-$22.1 & $<10^{-4}$ \\
+Germany & 40 & $-$0.06 [$-$0.09, $-$0.02] & +0.03 [$-$0.04, +0.09] & $-$23.1 & $<10^{-4}$ \\
+SE Australia & 40 & $-$0.04 [$-$0.11, +0.02] & +0.01 [$-$0.07, +0.08] & $-$26.3 & $<10^{-4}$ \\
+Taiwan & 13 & $-$0.02 [$-$0.06, +0.02] & +0.25 [+0.07, +0.43] & $-$21.5 & 0.0002 \\
+All regions & 133 & $-$0.07 [$-$0.11, $-$0.04] & $-$0.01 [$-$0.06, +0.04] & $-$23.5 & $<10^{-4}$ \\
+\botrule
+\end{tabular*}
+\end{table}

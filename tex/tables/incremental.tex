@@ -1,0 +1,48 @@
+\begin{table}[t]
+\caption{Incremental information about drought onset within 60 days (weekly logistic models,
+five-fold cross-validation over blocks of years, 1982--2024). $\Delta$AUC is relative to the reference
+model; brackets are 95\% region-year cluster-bootstrap intervals. Predictors other than SPI are
+30-day means. $^{\dagger}$Post hoc.}
+\label{tab:incremental}
+\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}llcc}
+\toprule
+Model & Reference & AUC & $\Delta$AUC\\
+\midrule
+\multicolumn{4}{l}{\textit{Central Texas} (base AUC 0.544, prevalence 0.083)}\\
+\quad SPI-90 + D1 & SPI-90 & 0.576 & +0.033 [+0.010, +0.057] \\
+\quad SPI-90 + D2 & SPI-90 & 0.574 & +0.030 [+0.007, +0.054] \\
+\quad SPI-90 + D5 & SPI-90 & 0.597 & +0.053 [+0.029, +0.079] \\
+\quad SPI-90 + SPI-30$^{\dagger}$ & SPI-90 & 0.586 & +0.043 [+0.022, +0.065] \\
+\quad SPI-90 + SPI-30 + D1$^{\dagger}$ & SPI-90 + SPI-30 & 0.585 & $-$0.002 [$-$0.007, +0.003] \\
+\midrule
+\multicolumn{4}{l}{\textit{Germany} (base AUC 0.561, prevalence 0.085)}\\
+\quad SPI-90 + D1 & SPI-90 & 0.574 & +0.012 [+0.004, +0.021] \\
+\quad SPI-90 + D2 & SPI-90 & 0.571 & +0.010 [+0.001, +0.018] \\
+\quad SPI-90 + D5 & SPI-90 & 0.599 & +0.037 [+0.023, +0.050] \\
+\quad SPI-90 + SPI-30$^{\dagger}$ & SPI-90 & 0.591 & +0.029 [+0.017, +0.041] \\
+\quad SPI-90 + SPI-30 + D1$^{\dagger}$ & SPI-90 + SPI-30 & 0.590 & $-$0.0009 [$-$0.0042, +0.0023] \\
+\midrule
+\multicolumn{4}{l}{\textit{SE Australia} (base AUC 0.589, prevalence 0.073)}\\
+\quad SPI-90 + D1 & SPI-90 & 0.612 & +0.022 [+0.009, +0.038] \\
+\quad SPI-90 + D2 & SPI-90 & 0.608 & +0.019 [+0.005, +0.034] \\
+\quad SPI-90 + D5 & SPI-90 & 0.632 & +0.043 [+0.025, +0.063] \\
+\quad SPI-90 + SPI-30$^{\dagger}$ & SPI-90 & 0.626 & +0.037 [+0.020, +0.056] \\
+\quad SPI-90 + SPI-30 + D1$^{\dagger}$ & SPI-90 + SPI-30 & 0.626 & $-$0.0001 [$-$0.0017, +0.0013] \\
+\midrule
+\multicolumn{4}{l}{\textit{Taiwan} (base AUC 0.434, prevalence 0.097)}\\
+\quad SPI-90 + D1 & SPI-90 & 0.480 & +0.045 [+0.017, +0.070] \\
+\quad SPI-90 + D2 & SPI-90 & 0.459 & +0.025 [+0.005, +0.045] \\
+\quad SPI-90 + D5 & SPI-90 & 0.554 & +0.120 [+0.075, +0.159] \\
+\quad SPI-90 + SPI-30$^{\dagger}$ & SPI-90 & 0.529 & +0.095 [+0.052, +0.134] \\
+\quad SPI-90 + SPI-30 + D1$^{\dagger}$ & SPI-90 + SPI-30 & 0.526 & $-$0.003 [$-$0.008, +0.001] \\
+\midrule
+\multicolumn{4}{l}{\textit{All regions} (base AUC 0.575, prevalence 0.082)}\\
+\quad SPI-90 + D1 & SPI-90 & 0.597 & +0.022 [+0.014, +0.030] \\
+\quad SPI-90 + D2 & SPI-90 & 0.594 & +0.019 [+0.011, +0.026] \\
+\quad SPI-90 + D5 & SPI-90 & 0.618 & +0.043 [+0.032, +0.055] \\
+\quad SPI-90 + SPI-30$^{\dagger}$ & SPI-90 & 0.611 & +0.036 [+0.026, +0.045] \\
+\quad SPI-90 + SPI-30 + D1$^{\dagger}$ & SPI-90 + SPI-30 & 0.610 & $-$0.0004 [$-$0.0012, +0.0002] \\
+\botrule
+\end{tabular*}
+\end{table}

@@ -1,0 +1,27 @@
+# large or re-downloadable inputs (rebuilt by the fetch scripts)
+data/ghcnd/
+data/taiwan_raingel/
+data/*/daily_precip_long.csv
+data/*/temperature_long.csv
+data/*/power/
+data/*/era5land/
+# large intermediate model outputs (rebuilt by train_models*.py / build_scores*.py)
+results/scores/
+results/scores_mv/
+results/panel/*.npz
+results/panel_mv/*.npz
+results/warning*/station_year.csv
+# LaTeX build files
+tex/*.aux
+tex/*.log
+tex/*.out
+tex/*.bbl
+tex/*.blg
+tex/*.synctex.gz
+tex/*.out.txt
+tex/*_draft.tex
+# misc
+logs/
+__pycache__/
+*.pyc
+.DS_Store
