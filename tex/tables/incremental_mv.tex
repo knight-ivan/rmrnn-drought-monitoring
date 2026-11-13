@@ -1,42 +1,45 @@
-\begin{table}[t]
+\begin{table}[tbp]
 \caption{Temperature-aware analysis: incremental information about onset within 60 days. ``base'' =
-SPEI-90 + SPEI-30 + SPI-30; predictors other than the indices are 30-day means. AUCs from five-fold
-cross-validation over blocks of years; brackets are 95\% region-year cluster-bootstrap intervals.}
+SPEI-90 + SPEI-30 + SPI-30; predictors other than the indices are 30-day means. Each model is compared
+with the model without its last term. Blocked and forward as in Table~\ref{tab:incremental}; brackets are
+95\% region-year cluster-bootstrap intervals.}
 \label{tab:incrementalmv}
-\footnotesize\setlength{\tabcolsep}{4pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep\fill}llcc}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccc}
 \toprule
-Model & Reference (AUC) & AUC & $\Delta$AUC\\
+& \multicolumn{2}{c}{Blocked cross-validation} & \multicolumn{2}{c}{Forward chaining}\\
+\cmidrule{2-3}\cmidrule{4-5}
+Model & AUC & $\Delta$AUC & AUC & $\Delta$AUC\\
 \midrule
-\multicolumn{4}{l}{\textit{Central Texas}}\\
-\quad SPEI-90 + D8 & SPEI-90 (0.531) & 0.549 & +0.018 [$-$0.013, +0.044] \\
-\quad base + D8 & base (0.583) & 0.582 & $-$0.001 [$-$0.005, +0.003] \\
-\quad base + D9 & base (0.583) & 0.582 & $-$0.0014 [$-$0.0043, +0.0015] \\
-\quad base + D1 & base (0.583) & 0.582 & $-$0.001 [$-$0.008, +0.005] \\
+\multicolumn{5}{l}{\textit{Central Texas} (AUC of SPEI-90 alone: 0.531 blocked, 0.547 forward; of base: 0.583, 0.584)}\\
+\quad SPEI-90 + D8 & 0.549 & +0.018 [$-$0.013, +0.044] & 0.549 & +0.001 [$-$0.033, +0.032] \\
+\quad base + D8 & 0.582 & $-$0.001 [$-$0.005, +0.003] & 0.577 & $-$0.006 [$-$0.014, $-$0.000] \\
+\quad base + D9 & 0.582 & $-$0.0014 [$-$0.0043, +0.0015] & 0.578 & $-$0.006 [$-$0.013, $-$0.000] \\
+\quad base + D1 & 0.582 & $-$0.001 [$-$0.008, +0.005] & 0.584 & +0.000 [$-$0.009, +0.009] \\
 \midrule
-\multicolumn{4}{l}{\textit{Germany}}\\
-\quad SPEI-90 + D8 & SPEI-90 (0.569) & 0.562 & $-$0.008 [$-$0.018, +0.002] \\
-\quad base + D8 & base (0.608) & 0.601 & $-$0.006 [$-$0.010, $-$0.003] \\
-\quad base + D9 & base (0.608) & 0.603 & $-$0.005 [$-$0.009, $-$0.001] \\
-\quad base + D1 & base (0.608) & 0.608 & +0.0003 [$-$0.0041, +0.0045] \\
+\multicolumn{5}{l}{\textit{Germany} (AUC of SPEI-90 alone: 0.569 blocked, 0.589 forward; of base: 0.608, 0.622)}\\
+\quad SPEI-90 + D8 & 0.562 & $-$0.008 [$-$0.018, +0.002] & 0.589 & +0.000 [$-$0.009, +0.011] \\
+\quad base + D8 & 0.601 & $-$0.006 [$-$0.010, $-$0.003] & 0.620 & $-$0.002 [$-$0.005, $-$0.000] \\
+\quad base + D9 & 0.603 & $-$0.005 [$-$0.009, $-$0.001] & 0.620 & $-$0.002 [$-$0.007, +0.002] \\
+\quad base + D1 & 0.608 & +0.0003 [$-$0.0041, +0.0045] & 0.622 & $-$0.001 [$-$0.007, +0.005] \\
 \midrule
-\multicolumn{4}{l}{\textit{SE Australia}}\\
-\quad SPEI-90 + D8 & SPEI-90 (0.552) & 0.570 & +0.018 [$-$0.001, +0.037] \\
-\quad base + D8 & base (0.615) & 0.613 & $-$0.001 [$-$0.005, +0.002] \\
-\quad base + D9 & base (0.615) & 0.613 & $-$0.001 [$-$0.006, +0.003] \\
-\quad base + D1 & base (0.615) & 0.615 & $-$0.0002 [$-$0.0010, +0.0006] \\
+\multicolumn{5}{l}{\textit{SE Australia} (AUC of SPEI-90 alone: 0.552 blocked, 0.537 forward; of base: 0.615, 0.606)}\\
+\quad SPEI-90 + D8 & 0.570 & +0.018 [$-$0.001, +0.037] & 0.555 & +0.017 [$-$0.009, +0.044] \\
+\quad base + D8 & 0.613 & $-$0.001 [$-$0.005, +0.002] & 0.604 & $-$0.003 [$-$0.008, +0.003] \\
+\quad base + D9 & 0.613 & $-$0.001 [$-$0.006, +0.003] & 0.604 & $-$0.002 [$-$0.008, +0.004] \\
+\quad base + D1 & 0.615 & $-$0.0002 [$-$0.0010, +0.0006] & 0.606 & $-$0.0002 [$-$0.0010, +0.0006] \\
 \midrule
-\multicolumn{4}{l}{\textit{Taiwan}}\\
-\quad SPEI-90 + D8 & SPEI-90 (0.437) & 0.456 & +0.019 [$-$0.006, +0.043] \\
-\quad base + D8 & base (0.538) & 0.530 & $-$0.007 [$-$0.016, $-$0.000] \\
-\quad base + D9 & base (0.538) & 0.531 & $-$0.007 [$-$0.015, $-$0.001] \\
-\quad base + D1 & base (0.538) & 0.535 & $-$0.003 [$-$0.007, +0.000] \\
+\multicolumn{5}{l}{\textit{Taiwan} (AUC of SPEI-90 alone: 0.437 blocked, 0.458 forward; of base: 0.538, 0.546)}\\
+\quad SPEI-90 + D8 & 0.456 & +0.019 [$-$0.006, +0.043] & 0.500 & +0.043 [$-$0.027, +0.097] \\
+\quad base + D8 & 0.530 & $-$0.007 [$-$0.016, $-$0.000] & 0.542 & $-$0.005 [$-$0.017, +0.006] \\
+\quad base + D9 & 0.531 & $-$0.007 [$-$0.015, $-$0.001] & 0.543 & $-$0.004 [$-$0.014, +0.005] \\
+\quad base + D1 & 0.535 & $-$0.003 [$-$0.007, +0.000] & 0.543 & $-$0.004 [$-$0.011, +0.002] \\
 \midrule
-\multicolumn{4}{l}{\textit{All regions}}\\
-\quad SPEI-90 + D8 & SPEI-90 (0.562) & 0.569 & +0.007 [$-$0.004, +0.016] \\
-\quad base + D8 & base (0.606) & 0.604 & $-$0.0015 [$-$0.0027, $-$0.0003] \\
-\quad base + D9 & base (0.606) & 0.604 & $-$0.0014 [$-$0.0025, $-$0.0002] \\
-\quad base + D1 & base (0.606) & 0.605 & $-$0.0007 [$-$0.0014, $-$0.0000] \\
+\multicolumn{5}{l}{\textit{All regions} (AUC of SPEI-90 alone: 0.562 blocked, 0.565 forward; of base: 0.606, 0.601)}\\
+\quad SPEI-90 + D8 & 0.569 & +0.007 [$-$0.004, +0.016] & 0.570 & +0.005 [$-$0.010, +0.020] \\
+\quad base + D8 & 0.604 & $-$0.0015 [$-$0.0027, $-$0.0003] & 0.600 & $-$0.0015 [$-$0.0032, +0.0001] \\
+\quad base + D9 & 0.604 & $-$0.0014 [$-$0.0025, $-$0.0002] & 0.600 & $-$0.0013 [$-$0.0028, +0.0001] \\
+\quad base + D1 & 0.605 & $-$0.0007 [$-$0.0014, $-$0.0000] & 0.600 & $-$0.0009 [$-$0.0020, +0.0002] \\
 \botrule
 \end{tabular*}
 \end{table}

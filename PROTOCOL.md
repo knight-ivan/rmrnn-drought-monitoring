@@ -147,3 +147,61 @@ carry drought-onset information beyond SPEI, the temperature-aware standard inde
   (the estimator of Vicente-Serrano et al. 2010) instead of maximum likelihood,
   because the MLE pilot on one station gave reference-period SPEI with mean 0.80
   and SD 0.48 (should be ~0 and ~1).
+
+# AMENDMENT 2 — post hoc robustness checks
+Written 2026-11-13, AFTER every result above was known and the manuscript had been drafted,
+in response to a pre-submission review. Nothing in this amendment was pre-specified. No
+threshold is re-tuned and no pre-specified result is replaced: the pre-specified analyses
+remain the primary results, and every item below is reported and labelled post hoc.
+
+## Clarification of the pre-specified scoring rule
+- A hit is credited to an event when any alarm falls in [onset - 60 d, onset + 120 d]; the
+  rule does not force a one-to-one correspondence. When the windows of two events at one
+  station overlap (onsets <= 180 d apart), one alarm can be credited to both.
+- An alarm after the end of a short event but before onset + 120 d counts both as a (late)
+  hit and as a false alarm, because false alarms are alarms outside [onset - 60 d, end].
+- Both conventions apply equally to every detector. Their frequency is tabulated.
+
+## Event matching and scoring window (code/serra/matching_checks.py)
+- One-to-one rule: every alarm is assigned to at most one event. Events are processed in
+  chronological order and each takes the earliest unassigned alarm in its window (for windows
+  of equal length this maximises the number of matched events). A false alarm is an unmatched
+  alarm outside [onset - pre, end] of every event.
+- Windows: pre in {60, 30, 0} d and post in {120, 90, 60} d, under both rules (the false-alarm
+  window moves with pre). Thresholds are those calibrated for the primary budget.
+- Random-timing reference: POD when each station's alarm sequence is shifted circularly within
+  2001-2024 by a random offset (500 replicates), which keeps the number and spacing of alarms
+  and removes their alignment with the events.
+- Dependence: station-level onsets are grouped into regional episodes (onsets in a region linked
+  when <= 30 d apart). The year-cluster bootstrap is repeated with circular blocks of 2, 3 and 4
+  consecutive years within region (2000 resamples).
+- SPI-3 (D4) calibration: the alarm count of the month-end down-crossing rule is not monotone
+  in its threshold c, and the pre-specified grid search met the budget of 1.0 alarm per year with
+  a positive threshold in Germany and Australia. D4 is re-calibrated with the grid restricted
+  to c <= 0 (closest attainable rate) and re-scored by the pre-specified rule, at every budget.
+- Check: with the pre-specified rule, window and year resampling, the script reproduces
+  summary.csv, paired.csv and paired_timing.csv exactly.
+
+## Predictive validation (code/serra/incremental_forward.py)
+- The pre-specified five-fold blocked-by-year cross-validation trains on years that follow the
+  test block; its AUC is described as retrospective discrimination.
+- Forward chaining (primary post hoc scheme): weeks of year Y in 2001-2024 are predicted by a
+  model fitted to weeks t < (1 January Y) - 60 d (expanding window from 1982, annual refit).
+  Sensitivity: refit every six years; blocked folds with training weeks within 60 d of a test
+  block removed; blocked scheme scored on 2001-2024 only.
+- Same models, same region-year cluster bootstrap (1000 resamples), for the precipitation-only
+  and the temperature-aware analyses.
+
+## Other changes made with this amendment
+- Terminology: detector D1 is called the "regularised defect" (previously "RM defect"); the
+  penalty is described as backward-coherence regularisation inspired by reverse-martingale
+  theory. No computation changes.
+- Figures: operating curves and event composites redrawn as 2 x 2 panels for legibility;
+  composite panel titles state how many onsets are averaged (onsets in the last 180 days of
+  the record are left out because their window is incomplete).
+- Registration: this protocol and its amendments are dated files kept with the code. They were
+  not lodged with an external registry.
+- Independent re-run (2026-11-13, Python 3.13, NumPy 2.5, pandas 3.0, SciPy 1.18, scikit-learn
+  1.9, statsmodels 0.15, Numba 0.68): evaluate_warning.py (both panels) and drift_mv.py reproduce
+  the stored result files exactly; covariate_analysis.py and covariate_analysis_mv.py reproduce
+  them to within 2e-6. forecast_eval.py and the training scripts were not re-run.

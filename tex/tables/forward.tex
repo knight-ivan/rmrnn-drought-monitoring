@@ -1,0 +1,29 @@
+\begin{table}[tbp]
+\caption{Incremental information about onset within 60 days under five validation schemes, pooled over
+regions: $\Delta$AUC of each model against the model without its last term, with 95\% region-year
+cluster-bootstrap intervals. In the blocked schemes the training folds include years after the test block;
+in the forward-chaining schemes a week is predicted only from earlier weeks, with a 60-day gap. The first
+row is the pre-specified scheme, scored on 1982--2024; the other rows are post hoc and scored on
+2001--2024. ``base'' = SPEI-90 + SPEI-30 + SPI-30.}
+\label{tab:forward}
+\footnotesize\setlength{\tabcolsep}{2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccc}
+\toprule
+Validation scheme & First model & Second model & Third model\\
+\midrule
+\multicolumn{4}{l}{\textit{Precipitation-only analysis}: SPI-90 + D1, SPI-90 + SPI-30, SPI-90 + SPI-30 + D1}\\
+Blocked, 1982--2024 & +0.022 [+0.014, +0.030] & +0.036 [+0.026, +0.045] & $-$0.0004 [$-$0.0012, +0.0002] \\
+Blocked & +0.023 [+0.011, +0.034] & +0.034 [+0.021, +0.048] & $-$0.0005 [$-$0.0016, +0.0005] \\
+Blocked, 60-day gap & +0.023 [+0.011, +0.034] & +0.034 [+0.022, +0.046] & $-$0.0005 [$-$0.0017, +0.0006] \\
+Forward, annual refit & +0.021 [+0.009, +0.034] & +0.030 [+0.017, +0.044] & $-$0.0004 [$-$0.0014, +0.0007] \\
+Forward, six-year refit & +0.020 [+0.009, +0.032] & +0.030 [+0.017, +0.044] & $-$0.0008 [$-$0.0022, +0.0002] \\
+\midrule
+\multicolumn{4}{l}{\textit{Temperature-aware analysis}: SPEI-90 + D8, base + D8, base + D1}\\
+Blocked, 1982--2024 & +0.007 [$-$0.004, +0.016] & $-$0.0015 [$-$0.0027, $-$0.0003] & $-$0.0007 [$-$0.0014, $-$0.0000] \\
+Blocked & +0.006 [$-$0.007, +0.020] & $-$0.0007 [$-$0.0021, +0.0008] & $-$0.0010 [$-$0.0020, +0.0001] \\
+Blocked, 60-day gap & +0.006 [$-$0.008, +0.020] & $-$0.0007 [$-$0.0021, +0.0006] & $-$0.0011 [$-$0.0023, +0.0000] \\
+Forward, annual refit & +0.005 [$-$0.010, +0.020] & $-$0.0015 [$-$0.0032, +0.0001] & $-$0.0009 [$-$0.0020, +0.0002] \\
+Forward, six-year refit & +0.006 [$-$0.008, +0.022] & $-$0.0008 [$-$0.0026, +0.0010] & $-$0.0013 [$-$0.0024, $-$0.0001] \\
+\botrule
+\end{tabular*}
+\end{table}

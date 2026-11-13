@@ -1,8 +1,10 @@
-\begin{table}[t]
+\begin{table}[tbp]
 \caption{Paired comparisons at the primary budget (1 alarm per station-year). $\Delta$POD and
 $\Delta$FAR are first minus second detector; $\Delta$timing is the median, over events detected by both,
 of (second detector's alarm $-$ first detector's alarm), so positive values mean the first detector
-alarms earlier. Brackets: 95\% cluster-bootstrap intervals. $^{\dagger}$Post hoc.}
+alarms earlier. Brackets: 95\% cluster-bootstrap intervals. $^{\dagger}$Post hoc. $^{\ddagger}$Distorted by
+the wet-side SPI-3 threshold (Table~\ref{tab:warning}); with a dry-side threshold the pooled $\Delta$POD is
+\spithreedrydpodall.}
 \label{tab:paired}
 \footnotesize\setlength{\tabcolsep}{4pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccr}
@@ -20,7 +22,7 @@ Comparison & $\Delta$POD & $\Delta$FAR (per yr) & $\Delta$timing (d) & $n$ both\
 \multicolumn{5}{l}{\textit{Germany}}\\
 \quad D1 vs D2 ($\lambda=0$) & +0.014 [$-$0.013, +0.042] & +0.00 [$-$0.05, +0.05] & +1.0 [+0.0, +1.0] & 245 \\
 \quad D1 vs D3 (SPI-90) & $-$0.106 [$-$0.188, $-$0.019] & +0.18 [+0.02, +0.34] & +21.5 [+8.0, +37.0] & 226 \\
-\quad D1 vs D4 (SPI-3) & +0.284 [+0.140, +0.411] & $-$0.35 [$-$0.53, $-$0.17] & +2.0 [$-$16.0, +14.0] & 92 \\
+\quad D1 vs D4 (SPI-3)$^{\ddagger}$ & +0.284 [+0.140, +0.411] & $-$0.35 [$-$0.53, $-$0.17] & +2.0 [$-$16.0, +14.0] & 92 \\
 \quad D1 vs D7 (SPI-30)$^{\dagger}$ & $-$0.120 [$-$0.171, $-$0.069] & +0.11 [+0.00, +0.23] & +7.0 [+3.0, +10.0] & 239 \\
 \quad D7 vs D3$^{\dagger}$ & +0.014 [$-$0.056, +0.088] & +0.07 [$-$0.05, +0.18] & +15.5 [+6.0, +25.0] & 284 \\
 \quad D6 vs D3$^{\dagger}$ & $-$0.012 [$-$0.036, +0.011] & +0.04 [$-$0.01, +0.08] & +5.0 [+3.0, +7.0] & 303 \\
@@ -28,7 +30,7 @@ Comparison & $\Delta$POD & $\Delta$FAR (per yr) & $\Delta$timing (d) & $n$ both\
 \multicolumn{5}{l}{\textit{SE Australia}}\\
 \quad D1 vs D2 ($\lambda=0$) & $-$0.019 [$-$0.056, +0.020] & $-$0.04 [$-$0.08, +0.00] & +0.0 [$-$0.5, +1.0] & 273 \\
 \quad D1 vs D3 (SPI-90) & $-$0.101 [$-$0.171, $-$0.036] & $-$0.01 [$-$0.11, +0.09] & +11.5 [+3.0, +16.0] & 256 \\
-\quad D1 vs D4 (SPI-3) & +0.387 [+0.270, +0.485] & $-$0.10 [$-$0.27, +0.09] & $-$28.0 [$-$37.5, $-$7.0] & 90 \\
+\quad D1 vs D4 (SPI-3)$^{\ddagger}$ & +0.387 [+0.270, +0.485] & $-$0.10 [$-$0.27, +0.09] & $-$28.0 [$-$37.5, $-$7.0] & 90 \\
 \quad D1 vs D7 (SPI-30)$^{\dagger}$ & $-$0.048 [$-$0.097, $-$0.002] & +0.08 [+0.01, +0.14] & +7.0 [+5.0, +10.0] & 259 \\
 \quad D7 vs D3$^{\dagger}$ & $-$0.053 [$-$0.092, $-$0.017] & $-$0.09 [$-$0.18, $-$0.00] & +8.0 [+4.0, +13.0] & 288 \\
 \quad D6 vs D3$^{\dagger}$ & +0.038 [+0.010, +0.066] & +0.03 [$-$0.01, +0.06] & +6.0 [+4.0, +7.0] & 330 \\
@@ -44,7 +46,7 @@ Comparison & $\Delta$POD & $\Delta$FAR (per yr) & $\Delta$timing (d) & $n$ both\
 \multicolumn{5}{l}{\textit{All regions}}\\
 \quad D1 vs D2 ($\lambda=0$) & +0.010 [$-$0.009, +0.029] & $-$0.02 [$-$0.04, +0.00] & +0.0 [+0.0, +0.0] & 872 \\
 \quad D1 vs D3 (SPI-90) & $-$0.098 [$-$0.140, $-$0.056] & +0.06 [$-$0.01, +0.14] & +16.0 [+12.0, +22.0] & 825 \\
-\quad D1 vs D4 (SPI-3) & +0.156 [+0.086, +0.225] & $-$0.15 [$-$0.25, $-$0.05] & +5.0 [$-$3.0, +10.5] & 521 \\
+\quad D1 vs D4 (SPI-3)$^{\ddagger}$ & +0.156 [+0.086, +0.225] & $-$0.15 [$-$0.25, $-$0.05] & +5.0 [$-$3.0, +10.5] & 521 \\
 \quad D1 vs D7 (SPI-30)$^{\dagger}$ & $-$0.079 [$-$0.112, $-$0.046] & +0.05 [$-$0.01, +0.09] & +6.0 [+4.0, +7.0] & 848 \\
 \quad D7 vs D3$^{\dagger}$ & $-$0.018 [$-$0.045, +0.010] & +0.01 [$-$0.04, +0.07] & +15.0 [+12.0, +17.0] & 976 \\
 \quad D6 vs D3$^{\dagger}$ & +0.001 [$-$0.017, +0.018] & +0.02 [$-$0.01, +0.04] & +5.0 [+4.0, +6.0] & 1056 \\

@@ -4,6 +4,8 @@
 \graphicspath{{../figures/}}
 \usepackage{booktabs}
 \usepackage{microtype}
+\usepackage{placeins}
+\usepackage{listings}
 \usepackage{xr-hyper}
 \externaldocument[M-]{RM_Precipitation_SERRA}
 \input{tables/numbers.tex}
@@ -21,30 +23,100 @@ backward-coherence regularisation'', \emph{Stochastic Environmental Research and
 \author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}\,\orcidtext{0000-0002-4977-7721}}\email{ycchang@as.edu.tw}
 \affil[1]{\orgdiv{Institute of Statistical Science}, \orgname{Academia Sinica},
 \orgaddress{\city{Taipei}, \postcode{11529}, \country{Taiwan}}}
-\abstract{Warning results at alternative alarm budgets, additional results of the temperature-aware
-analysis, calibration diagnostics, and a description of the code, data and reproduction steps.}
+\abstract{Warning results at alternative alarm budgets; robustness of the event-based scoring to the
+matching rule, the scoring window and multi-year dependence; a random-timing reference; calibration of the
+monthly SPI-3 rule; validation schemes for the incremental-information analysis; additional results of the
+temperature-aware analysis; calibration diagnostics; a description of the code, data and reproduction
+steps; and the analysis protocol with its amendments.}
 \maketitle
 
 \section{Warning skill at alternative alarm budgets}\label{sec:budgets}
 Tables~\ref{tab:warning05} and~\ref{tab:warning2} repeat Table~\ref{M-tab:warning} of the main paper at budgets of 0.5
-and 2 alarms per station-year. Timing is reported for the primary budget only. At two alarms per
-station-year the month-end SPI-3 rule cannot attain the budget in any region, nor can daily SPI-90 in
-Texas; the forecast residual misses the budget by more than 10\% in some regions at every budget
-(Table~\ref{tab:thresholds}). These entries use the closest attainable rate and are flagged.
+and 2 alarms per station-year. Timing and the random-timing reference are reported for the primary budget
+only. At two alarms per station-year the month-end SPI-3 rule cannot attain the budget in any region, nor
+can daily SPI-90 in Texas; the forecast residual misses the budget by more than 10\% in some regions at
+every budget (Table~\ref{tab:thresholds}). These entries use the closest attainable rate and are flagged.
+The SPI-3 entries are also affected by the sign of the calibrated threshold (Section~\ref{sec:matching},
+Table~\ref{tab:spithree}).
 
 \input{tables/warning_b05.tex}
 \input{tables/warning_b2.tex}
+\FloatBarrier
+
+\section{Robustness of the event-based scoring}\label{sec:matching}
+All analyses in this section are post hoc (protocol Amendment~2, Section~\ref{sec:protocol}) and are
+computed by \texttt{code/serra/matching\_checks.py} from the stored detector scores, at the thresholds
+calibrated for the primary budget. With the pre-specified rule, window and year resampling the script
+reproduces the tables of the main paper exactly.
+
+\paragraph{Matching rule.} The pre-specified rule credits an event with a hit when any alarm falls within
+$[-60,+120]$ days of its onset. It does not force a one-to-one correspondence: when the windows of two
+events at a station overlap, one alarm can be credited to both, and an alarm that follows the end of a
+short event but precedes onset $+120$ days counts both as a late hit and as a false alarm.
+Table~\ref{tab:episodes} shows how often this happens. Under the \emph{one-to-one} rule every alarm is
+assigned to at most one event: events are processed in chronological order and each takes the earliest
+unassigned alarm in its window, which for windows of equal length maximises the number of matched events;
+a false alarm is then an unmatched alarm outside $[\text{onset}-\text{pre},\text{end}]$ of every event.
+
+\paragraph{Scoring window.} Both rules are re-scored with pre-onset limits of 60, 30 and 0 days and
+post-onset limits of 120, 90 and 60 days (Tables~\ref{tab:matching} and~\ref{tab:matchingb}; the
+temperature-aware analysis is in Table~\ref{tab:matchingmv}). The false-alarm window moves with the
+pre-onset limit.
+
+\paragraph{Random-timing reference.} With one alarm per station-year and a 180-day window, alarms that carry
+no information still score hits. The reference is the POD obtained when each station's alarm sequence is
+shifted circularly within 2001--2024 by a random offset (500 replicates). The shift keeps the number of
+alarms and their spacing, including the refractory period, and removes their alignment with the events.
+The mean over replicates is reported in Tables~\ref{M-tab:warning} and~\ref{M-tab:warningmv} of the main
+paper and, for each window, in Tables~\ref{tab:matching} and~\ref{tab:matchingmv}.
+
+\paragraph{Dependence.} Station-level onsets in a region are linked into one episode when at most 30 days
+apart (Table~\ref{tab:episodes}). Table~\ref{tab:blockboot} repeats the paired intervals with circular
+blocks of two, three and four consecutive years, which allows for dependence between successive years.
+
+\paragraph{Monthly SPI-3 rule.} Table~\ref{tab:spithree} gives the SPI-3 rule (D4) with its threshold
+restricted to $c\le0$. In Germany and Australia at the primary budget, and in Germany and Taiwan at 0.5
+alarms per station-year, the pre-specified grid search met the budget with a positive threshold; the
+dry-side threshold meets it equally well and gives a much higher POD. At two alarms per station-year the
+rule cannot attain the budget with either sign, so the comparison with the defect at that budget is not
+at a matched alarm rate.
+
+\input{tables/matching.tex}
+\input{tables/episodes.tex}
+\input{tables/blockboot.tex}
+\input{tables/spi3_dryside.tex}
+\FloatBarrier
+
+\section{Validation schemes for the incremental-information analysis}\label{sec:forward}
+The pre-specified scheme scores the weekly logistic models by five-fold cross-validation over contiguous
+blocks of years, so that the training folds include years after the test block.
+Table~\ref{tab:forward} compares it with schemes in which a week is predicted only from earlier weeks
+(\texttt{code/serra/incremental\_forward.py}; post hoc). In forward chaining, the weeks of year $Y$ in
+2001--2024 are predicted by a model fitted to the weeks since 1982 that precede 1 January of year $Y$ by
+more than 60 days, the prediction horizon, so that every training label was known before the year began;
+the model is refitted every year, or every six years in a variant. A further variant keeps the blocked
+folds and removes training weeks within 60 days of a test block on either side. The predictors are
+prospective in every scheme, because the networks and all reference distributions are fitted on
+1961--1990. By-region results under annual forward chaining are in Tables~\ref{M-tab:incremental}
+and~\ref{M-tab:incrementalmv} of the main paper.
+
+\input{tables/forward.tex}
+\FloatBarrier
 
 \section{Temperature-aware analysis: additional results}\label{sec:mvsupp}
 \input{tables/forecast_mv.tex}
 \input{tables/assoc_mv.tex}
 \input{tables/drift_mv.tex}
+\input{tables/matching_mv.tex}
+\FloatBarrier
 
 \section{Calibration diagnostics}\label{sec:calib}
 \input{tables/thresholds.tex}
+\FloatBarrier
 
 \section{Code, data and reproduction}\label{sec:code}
-All analyses are driven by the scripts in \texttt{code/}:
+Online Resource 2 holds the scripts in \texttt{code/}, the protocol, the result files in
+\texttt{results/} and a \texttt{README.md} with the exact commands. The steps are:
 \begin{enumerate}
 \item \texttt{fetch\_ghcnd\_long.py}, \texttt{build\_taiwan.py} (with the archived
 \texttt{fetch\_taiwan\_hydromet.py}) and \texttt{fetch\_power.py} download and assemble the gauge records
@@ -54,15 +126,42 @@ GRU (five seeds per station) and stores daily forecasts, defects and path increm
 \item \texttt{serra/build\_scores.py} computes the detector scores, SPI-90, SPI-3, soil-moisture
 percentiles and reference events; \texttt{serra/add\_spi30.py} adds the post hoc SPI-30.
 \item \texttt{serra/evaluate\_warning.py}, \texttt{serra/forecast\_eval.py} and
-\texttt{serra/covariate\_analysis.py} produce all results; \texttt{build\_temperature.py},
+\texttt{serra/covariate\_analysis.py} produce the pre-specified results; \texttt{build\_temperature.py},
 \texttt{serra/train\_models\_mv.py}, \texttt{serra/build\_scores\_mv.py}, \texttt{serra/covariate\_analysis\_mv.py}
 and \texttt{serra/drift\_mv.py} (with the \texttt{--mv} option of the evaluation scripts) carry out the
-temperature-aware analysis; \texttt{serra/text\_checks.py} tabulates the descriptive quantities quoted
-for the figures (composites, operating curves, station traces) and the interval-width comparison;
+temperature-aware analysis.
+\item \texttt{serra/matching\_checks.py} and \texttt{serra/incremental\_forward.py} (each also with
+\texttt{--mv}) produce the post hoc robustness checks of Sections~\ref{sec:matching}
+and~\ref{sec:forward}.
+\item \texttt{serra/text\_checks.py} tabulates the descriptive quantities quoted for the figures
+(composites, operating curves, station traces) and the interval-width comparison;
 \texttt{serra/make\_tables.py} writes every table and every number quoted in the text, and stops if a
 descriptive statement no longer matches the results; \texttt{serra/figures.py} draws the figures.
 \end{enumerate}
-The pre-specified protocol and its deviation log are in \texttt{PROTOCOL.md}. Training all models took
-about one hour (precipitation-only) and one hour (temperature-aware) on a 16-core workstation.
+\paragraph{Random seeds.} Network training uses seed $1000k+s$ for seed index $k=0,\dots,4$, where $s$ is
+the integer formed by the last four characters of the station identifier (0 if they are not digits). The
+bootstrap seeds are fixed in the scripts (20261112 for the warning evaluation and its robustness checks;
+7 and 11 for the incremental-information analyses; 5 for the drift check).
+
+\paragraph{Software versions.} The analyses were run with Python~3.12 and the package versions in
+\texttt{requirements.txt} (PyTorch~2.3, NumPy~1.26, SciPy~1.13, pandas~2.2, scikit-learn~1.9,
+statsmodels~0.14, Numba~0.60, Matplotlib~3.10, or later). The post hoc checks, and an independent re-run of the warning evaluation and
+of the covariate analyses from the stored detector scores, used Python~3.13, NumPy~2.5, SciPy~1.18,
+pandas~3.0, scikit-learn~1.9, statsmodels~0.15 and Numba~0.68; the warning evaluation reproduced the stored
+results exactly and the covariate analyses to within $2\times10^{-6}$.
+
+\paragraph{What is and is not in the archive.} Online Resource 2 contains the code, the protocol, all
+result tables, the reference events and the figures. The raw downloads, the per-seed score files and the
+daily score panels (about 2.2~GB) are rebuilt by the scripts; the score panels, from which all warning and
+covariate results can be recomputed without retraining, are available from the authors and will be
+deposited with the public release. Training all models took about one hour (precipitation-only) and one
+hour (temperature-aware) on a 16-core workstation.
+
+\section{Analysis protocol and amendments}\label{sec:protocol}
+The file \texttt{PROTOCOL.md} is reproduced verbatim below. The protocol and its amendments are dated
+files kept with the code; they were not lodged with an external registry.
+
+\lstinputlisting[basicstyle=\fontsize{6.2}{7.4}\selectfont\ttfamily,breaklines=true,columns=fullflexible,keepspaces=true,
+ frame=single,framesep=4pt,extendedchars=true,literate={—}{{---}}1]{../PROTOCOL.md}
 
 \end{document}

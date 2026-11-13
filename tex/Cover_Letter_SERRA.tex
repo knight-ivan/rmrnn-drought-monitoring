@@ -9,7 +9,7 @@ Institute of Statistical Science, Academia Sinica\\
 Taipei 11529, Taiwan\\
 \href{mailto:ycchang@as.edu.tw}{ycchang@as.edu.tw}\\ORCID 0000-0002-4977-7721}
 \address{Institute of Statistical Science\\Academia Sinica\\Taipei 11529, Taiwan}
-\date{12 November 2026}
+\date{13 November 2026}
 
 \begin{document}
 \begin{letter}{Editor-in-Chief\\
@@ -23,48 +23,55 @@ Hui-Mean Foo and Yuan-chin Ivan Chang for consideration as a Research Article in
 Environmental Research and Risk Assessment}.
 
 Recurrent neural networks are increasingly used for hydrometeorological time series, and their hidden
-states are an attractive source of monitoring statistics for environmental risks such as drought. We are
-not aware, however, of a test of whether such learned statistics add anything to standard indices that
-uses the statistical controls operational monitoring requires. Our paper asks this question for one well-defined
-construction, a reverse-martingale-motivated penalty whose reconstruction defect is monitored by a CUSUM
-procedure, and answers it with a design written down before any model was trained.
+states are an attractive source of monitoring statistics for environmental risks such as drought. We
+propose one such statistic and test it with the statistical controls that operational monitoring
+requires. The method, backward-coherence regularisation, is a penalty inspired by reverse-martingale
+theory that makes each hidden state reconstructable from its successor; its reconstruction error (the
+defect) is monitored by a CUSUM procedure. The evaluation followed a written analysis protocol.
 
 The study rests on daily gauge records for 1961--2024 from 133 stations in four contrasting climates
-(central Texas, Germany, south-eastern Australia and Taiwan) and on 1{,}466 drought onsets in 2001--2024
-defined from reanalysis root-zone soil moisture, a quantity that none of the detectors uses. Detectors are
-compared at a matched alarm budget calibrated on separate years, scored at the event level, and compared
-by paired cluster-bootstrap intervals that resample years and so respect the spatial dependence among
-stations. An ablation computes the same defect without the penalty, and standard SPI and SPEI are fitted on
-a 30-year reference period.
+(central Texas, Germany, south-eastern Australia and Taiwan) and on 1{,}466 station-level drought onsets
+in 2001--2024 defined from reanalysis root-zone soil moisture, a quantity that none of the detectors uses.
+Detectors are compared at a matched alarm budget calibrated on separate years, scored at the event level,
+and compared by paired cluster-bootstrap intervals that resample years and so respect the spatial
+dependence among stations. An ablation computes the same defect without the penalty, and standard SPI and
+SPEI are fitted on a 30-year reference period.
 
 The main findings are as follows.
 \begin{itemize}[leftmargin=1.5em,itemsep=2pt]
 \item The penalty smooths the hidden-state path by 23.5\% while next-day forecast error stays equivalent,
 within $\pm2\%$ by two one-sided tests, to the unregularised network and to a gated recurrent unit.
-\item The defect carries a drought signal: it falls towards drought onset and alarms a median of 16 days
-earlier than daily SPI-90 on events both detect. At the same alarm budget, however, it detects fewer onsets
-(0.665 against 0.763; difference $-0.098$, 95\% CI $-0.140$ to $-0.056$). A 30-day SPI reproduces most of
-its speed, and the defect adds no predictive information once SPI-30 is known.
-\item A pre-registered extension that supplies temperature and evaporative demand improves the network's
-forecasts but weakens the defect relative to SPEI (0.433 against 0.749 of onsets detected).
-\item In neither form does the penalty improve monitoring.
+\item The defect carries a drought signal. At one alarm per station-year it detects 0.665 of onsets, well
+above the 0.463 expected from randomly timed alarms, and it alarms a median of 16 days earlier than daily
+SPI-90 on events both detect. Combined with SPI-90 it retains that index's sensitivity and advances its
+alarms by a median of 5 days.
+\item The evaluation also marks the limits of the statistic. Daily SPI-90 detects more onsets (0.763;
+difference $-0.098$, 95\% CI $-0.140$ to $-0.056$), and a 30-day SPI reproduces most of the defect's speed.
+An extension specified in a protocol amendment, which supplies temperature and evaporative demand,
+improves the network's forecasts but not its defect as a monitor, and points to where further development
+is needed.
+\item The contribution of the penalty to monitoring was not statistically detectable at the precision of
+this study and needs more data to resolve.
+\item The findings are stable under one-to-one matching of alarms and events, alternative scoring windows,
+multi-year block resampling and forward-chaining validation.
 \end{itemize}
 
 We believe the paper suits the journal for two reasons. Its methodological content is stochastic and
 statistical throughout: sequential change detection, calibration of monitoring procedures under
-autocorrelation and seasonality, event-based verification, equivalence testing and dependence-aware
-resampling, applied to a hydroclimatic risk. And its conclusions, including the negative ones, show how a
-learned monitoring statistic can be benchmarked, against indices of matching time scale and against its
-own ablation, before operational value is claimed. The framework can be applied to other learned
-statistics, such as autoencoder reconstruction errors or forecast residuals of deep models.
+autocorrelation and seasonality, event-based verification against a random-timing reference, equivalence
+testing and dependence-aware resampling, applied to a hydroclimatic risk. And it shows how a learned
+monitoring statistic can be benchmarked, against indices of matching time scale and against its own
+ablation, before operational value is claimed. The framework can be applied to other learned statistics,
+such as autoencoder reconstruction errors or forecast residuals of deep models.
 
 We confirm that the manuscript is original, has not been published elsewhere and is not under
 consideration by any other journal, and that both authors have approved the submission. The authors have no
 competing interests. The work was partially supported by the National Science and Technology Council,
-Taiwan (grant 115-2118-M-001-004-). All data are public, and the code that reproduces every number, table
-and figure, together with the pre-specified protocol and its deviation log, is held in a repository that we
-will make public upon acceptance and can share with the editor and reviewers on request. The use of AI tools
-for code development and language editing is documented in the Methods, as the journal requires.
+Taiwan (grant 115-2118-M-001-004-). All data are public. The code that reproduces every number, table and
+figure, the analysis protocol with its amendments and deviation log, the run commands and the result files
+are submitted as Online Resource 2, and the same material is held in a repository that we will make public
+upon acceptance. The protocol is also reproduced in Online Resource 1. The use of AI tools for code
+development and language editing is documented in the Methods, as the journal requires.
 
 Thank you for considering our manuscript.
 

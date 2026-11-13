@@ -2,81 +2,119 @@
 
 Code, protocol and results for *"Can the hidden state of a recurrent precipitation model monitor
 drought onset? A pre-specified event-based evaluation of backward-coherence regularisation"*
-(Foo & Chang), prepared for *Stochastic Environmental Research and Risk Assessment* (2026-11-12).
+(Foo & Chang), prepared for *Stochastic Environmental Research and Risk Assessment*.
 Repository: https://github.com/knight-ivan/rmrnn-drought-monitoring (private until acceptance).
+This folder is also what is submitted to the journal as Online Resource 2.
 
-New study, not a revision of the JoH draft (JOHX56256, rejected by both reviewers).
-All numbers come from new analyses run in this folder; nothing is carried over
-from the earlier submission.
+Revision of 2026-11-13 (after a pre-submission review of the 2026-11-12 package): post hoc
+robustness checks added (PROTOCOL.md, Amendment 2), wording revised, figures redrawn. No
+pre-specified result was changed.
 
 ## Files
-- `tex/RM_Precipitation_SERRA.pdf` — main paper (26 pp, Springer Nature `sn-jnl`,
-  line numbers on).
-- `tex/RM_Precipitation_SERRA_supplement.pdf` — Online Resource 1 (6 pp).
-- `tex/tables/*.tex` and `tex/tables/numbers.tex` are **generated** by
-  `code/serra/make_tables.py`; every number in the text is a macro taken from the
-  result CSVs, so nothing is typed by hand.
-- `PROTOCOL.md` — analysis plan written before training, with a log of every deviation.
-- `results/` — all outputs (warning, forecast, covariates, panels, per-station scores).
+- `PROTOCOL.md` — analysis plan written before training, its deviation log, Amendment 1
+  (temperature-aware extension) and Amendment 2 (post hoc robustness checks). The protocol is a
+  dated file kept with the code; it was not lodged with an external registry.
+- `code/serra/` — the analysis scripts of the paper. `code/common/` and
+  `code/experiments_original/` — the original exploratory scripts, kept unchanged for the record
+  (only `fetch_taiwan_hydromet.py` is used by the pipeline).
+- `results/` — every result file the tables and figures are built from.
+- `tex/` — manuscript, Online Resource 1, cover letter. `tex/tables/*.tex` and
+  `tex/tables/numbers.tex` are **generated** by `code/serra/make_tables.py`; every number in the
+  text is a macro taken from the result CSVs, so nothing is typed by hand, and the script stops if
+  a descriptive sentence no longer matches the results.
 - `figures/` — all figures (made by `code/serra/figures.py`).
+- `logs/` — console logs of the original runs.
+- `reproduce.sh` — the commands below in one file.
+- `MANIFEST.sha256` — SHA-256 of every file in the archive.
 
-## Reproduce (about 1.5 h on 16 cores)
+## Reproduce (about 2 h on 16 cores for the full pipeline)
 ```
+# 1. data
 python3 code/fetch_ghcnd_long.py --region texas      # also germany, australia
-python3 code/experiments_original/fetch_taiwan_hydromet.py --source raingel --stations <list in build_taiwan.py> --years 1961-2024 --outdir data/taiwan_raingel
+python3 code/experiments_original/fetch_taiwan_hydromet.py --source raingel --stations <the 22 ids in COORD of code/build_taiwan.py, comma-separated> --years 1961-2024 --outdir data/taiwan_raingel
 python3 code/build_taiwan.py
 python3 code/fetch_power.py --region <each region>
+# 2. precipitation-only analysis (pre-specified)
 python3 code/serra/train_models.py
 python3 code/serra/build_scores.py && python3 code/serra/add_spi30.py
 python3 code/serra/evaluate_warning.py
 python3 code/serra/forecast_eval.py
 python3 code/serra/covariate_analysis.py
+# 3. temperature-aware analysis (Amendment 1)
 python3 code/build_temperature.py && python3 code/serra/train_models_mv.py && python3 code/serra/build_scores_mv.py
 python3 code/serra/evaluate_warning.py --mv && python3 code/serra/forecast_eval.py --mv
 python3 code/serra/covariate_analysis_mv.py && python3 code/serra/drift_mv.py
-python3 code/serra/text_checks.py && python3 code/serra/make_tables.py && python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv
+# 4. post hoc robustness checks (Amendment 2); need only results/panel*/
+python3 code/serra/matching_checks.py && python3 code/serra/matching_checks.py --mv
+python3 code/serra/incremental_forward.py && python3 code/serra/incremental_forward.py --mv
+# 5. tables, numbers, figures, PDFs
+python3 code/serra/text_checks.py && python3 code/serra/make_tables.py
+python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv
+cd tex && pdflatex RM_Precipitation_SERRA_supplement && pdflatex RM_Precipitation_SERRA && bibtex RM_Precipitation_SERRA \
+  && pdflatex RM_Precipitation_SERRA && pdflatex RM_Precipitation_SERRA_supplement \
+  && pdflatex RM_Precipitation_SERRA && pdflatex RM_Precipitation_SERRA_supplement && pdflatex RM_Precipitation_SERRA
 ```
+Steps 4 and 5 run from the stored score panels (`results/panel/*.npz`, `results/panel_mv/*.npz`,
+about 200 MB) without any retraining; step 4 takes about 40 minutes on two cores.
 
-## What the new evidence says (stated in the paper)
-- Forecasts: RMRNN is equivalent to its λ=0 ablation and to a GRU within ±2% MSE
-  (TOST), and its hidden-state path increment is 23.5% smaller.
-- Warning (1,466 soil-moisture drought onsets, 133 stations, 2001–2024, 1 alarm/yr):
-  the defect detects fewer onsets than daily SPI-90 (0.665 vs 0.763), but on events
-  both detect it alarms 16 days earlier. Daily SPI-30 accounts for most of that speed,
-  and the defect adds no predictive information once SPI-30 is known.
-  The regularisation does not change monitoring skill.
-- Temperature-aware extension (PROTOCOL amendment 1; 120 stations with gauge Tmax/Tmin,
-  1,336 onsets): forecasts improve (MSESS 0.116 vs 0.086) but the defect gets WORSE:
-  POD 0.433 vs SPEI-90 0.749 (Δ −0.317 [−0.367, −0.266]); adds nothing beyond
-  SPEI-90 + SPEI-30 + SPI-30 (ΔAUC −0.0015). Penalty still doesn't help monitoring.
-- So the paper is an honest evaluation and framework paper. It does **not** claim
-  that the defect gives early warning beyond SPI.
+## Random seeds
+- Training (`train_models*.py`): seed = 1000*k + s for seed index k = 0..4, where s is the
+  integer formed by the last four characters of the station id (0 if they are not digits);
+  `torch.manual_seed(seed)` and `numpy.random.default_rng(seed)`.
+- Bootstrap: 20261112 (`evaluate_warning.py`, `matching_checks.py`; +1 for block resampling,
+  +2 for the random-timing shifts), 7 (`covariate_analysis.py`), 11 (`covariate_analysis_mv.py`),
+  1007 / 1011 (`incremental_forward.py`, second pass), 5 (`drift_mv.py`).
 
-## Changes from the earlier work (all disclosed in the paper)
+## Software
+- Original runs: Python 3.12 with the packages in `requirements.txt`.
+  To do before the public release: run `pip freeze > requirements-lock.txt` in that environment
+  so that the exact versions are recorded.
+- Post hoc checks and independent re-run (2026-11-13): Python 3.13.18, NumPy 2.5.3, pandas 3.0.5,
+  SciPy 1.18.1, scikit-learn 1.9.1, statsmodels 0.15.0, Numba 0.68.1, Matplotlib 3.11.2.
+
+## Independent re-run of the stored results (2026-11-13)
+From the stored score panels, in the second environment above:
+- `evaluate_warning.py` and `evaluate_warning.py --mv`: thresholds, event rows, station-year
+  table, summary, paired differences, paired timing and operating curves **identical** to the
+  stored files.
+- `drift_mv.py`: identical. `text_checks.py`: identical.
+- `covariate_analysis.py`, `covariate_analysis_mv.py`: within 2e-6 of the stored files
+  (solver differences between library versions). The stored files are the originals.
+- Not re-run: data download, training, `build_scores*.py`, `forecast_eval.py` (they need the raw
+  data and the per-seed score files, about 2 GB).
+
+## What the evidence says (as stated in the paper)
+- Forecasts: the regularised network is equivalent to its λ=0 ablation and to a GRU within ±2%
+  MSE (TOST), and its hidden-state path increment is 23.5% smaller.
+- Warning (1,466 station-level soil-moisture drought onsets, 133 stations, 2001–2024, one alarm
+  per station-year): the defect detects 0.665 of onsets, against 0.463 for randomly timed alarms
+  and 0.763 for daily SPI-90 (difference −0.098 [−0.140, −0.056]); on events both detect it alarms
+  a median 16 days earlier. Daily SPI-30 accounts for most of that speed, and the defect adds no
+  detectable predictive information once SPI-30 is known (blocked CV and forward chaining).
+  Combined with SPI-90 (post hoc) it keeps SPI-90's sensitivity and advances alarms by 5 days.
+- Regularised vs unregularised defect: ΔPOD +0.010 [−0.009, +0.029]; no statistically detectable
+  difference, which is not the same as equivalence.
+- Temperature-aware extension (120 stations, 1,336 onsets): forecasts improve (MSESS 0.116 vs
+  0.086); the defect detects 0.433 of onsets, the level of randomly timed alarms (0.433), against
+  0.749 for SPEI-90.
+- Robustness (Amendment 2): one-to-one matching, nine scoring windows, 2–4-year block bootstrap
+  and forward-chaining validation leave these conclusions unchanged. The deficit to SPI-90 is
+  larger when alarms before the onset are not credited (−0.194 at [0, +120]).
+- Monthly SPI-3 (D4): the pre-specified grid search met the budget with a positive (wet-side)
+  threshold in Germany and Australia; those entries are not informative about the index. With a
+  dry-side threshold SPI-3 detects 0.767 of onsets pooled (defect minus SPI-3: −0.102
+  [−0.139, −0.061]).
+
+## Changes from the earlier exploratory work (all disclosed in the paper)
 - Turkey dropped (no gauge has a 30-year reference period); SE Australia (Murray–Darling) added.
 - Texas box widened to central Texas (40 long-record stations).
 - Reference events come from MERRA-2 root-zone soil moisture (NASA POWER), not ERA5-Land,
   because of download rate limits.
-- PyTorch re-implementation of the Elman RMRNN with early stopping; 5 seeds per station.
+- PyTorch re-implementation of the Elman network with early stopping; 5 seeds per station.
 
-## Author checks before submission
-1. The multivariate extension has been run (negative). Decide whether to submit
-   this evaluation framing.
-2. Co-author (Foo) review; CRediT roles are copied from the JoH version.
-3. In the submission system: enter ORCIDs (Foo 0000-0003-4200-5849; Chang 0000-0002-4977-7721;
-   both are also printed on the title pages), author contributions and competing interests
-   (SERRA takes these from the interface).
-4. On acceptance: make this repository public (`gh repo edit knight-ivan/rmrnn-drought-monitoring
-   --visibility public --accept-visibility-change-consequences`).
-
-## What is NOT in this repository (rebuilt by the scripts)
+## What is NOT in this archive (rebuilt by the scripts)
 Raw GHCN `.dly` files, Raingel daily files, long-format daily inputs, MERRA-2 extracts,
-trained-model score files (`results/scores*/`) and score panels (`results/panel*/*.npz`):
-about 2.2 GB in total. They remain in the local Dropbox copy of this folder.
-
-## SERRA guideline compliance (checked 2026-11-12 against the journal's submission guidelines)
-Abstract 150–250 words; 6 keywords; Introduction within one printed page; author–year citations
-with DOIs; "Statements and Declarations" (funding with grant number, competing interests, author
-contributions, data and code availability) after the References; AI-tool use documented in
-Methods (Section "Software"); figure captions without trailing punctuation; supplement cited as
-"Online Resource 1"; dataset citations with DOI/URL; Springer Nature LaTeX template.
+per-seed score files (`results/scores*/`) and score panels (`results/panel*/*.npz`): about
+2.2 GB in total. The score panels are enough to recompute every warning and covariate result;
+they are kept with the authors and should be deposited (for example on Zenodo) with the public
+release.
