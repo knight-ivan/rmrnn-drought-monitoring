@@ -1,4 +1,4 @@
-# SERRA submission package — 14 November 2026 (revised after two pre-submission reviews)
+# SERRA submission package — 14 November 2026 (revised after three pre-submission reviews)
 
 **Journal:** *Stochastic Environmental Research and Risk Assessment* (Springer Nature, Editorial Manager)
 **Article type:** Research Article (Original Paper)
@@ -40,7 +40,7 @@ abstract 150–250 words, LaTeX source compiles alone, Online Resource 2 verifie
 
 ## Form fields (copy and paste)
 
-**Abstract** (249 words; the limit is 150–250): see `abstract.txt` in this folder.
+**Abstract** (239 words; the limit is 150–250): see `abstract.txt` in this folder.
 
 **Keywords (6):** sequential change detection; CUSUM; drought monitoring; standardized precipitation
 index; recurrent neural networks; event-based verification

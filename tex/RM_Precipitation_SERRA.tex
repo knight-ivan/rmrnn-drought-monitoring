@@ -33,24 +33,23 @@ backward-coherence regularisation}
 \affil[1]{\orgdiv{Institute of Statistical Science}, \orgname{Academia Sinica},
 \orgaddress{\city{Taipei}, \postcode{11529}, \country{Taiwan}}}
 
-\abstract{\mathversion{normal}The hidden state of a recurrent precipitation model is an attractive
-drought-monitoring statistic, but such statistics are rarely tested against standard indices
-under operational controls. We propose backward-coherence regularisation, a penalty inspired by
+\abstract{\mathversion{normal}Hidden states of recurrent precipitation models are attractive
+drought-monitoring statistics but are rarely tested against standard indices under operational
+controls. We propose backward-coherence regularisation, a penalty inspired by
 reverse-martingale theory that makes each hidden state reconstructable from its successor, monitor its
 reconstruction error (the \emph{defect}) by CUSUM, and evaluate it in a controlled framework.
 Following a written protocol, daily gauge records (1961--2024) from \nstall\ stations in Texas,
 Germany, Australia and Taiwan were scored against \nevall\ station-level drought onsets in
-2001--2024, defined from reanalysis soil moisture that no detector uses, at a matched alarm budget with
-year-cluster bootstrap intervals. The penalty smoothed the hidden-state path by \qpathred\% with forecast
+2001--2024, defined from reanalysis soil moisture that no detector uses, with detectors calibrated to a common
+alarm budget and year-cluster bootstrap intervals. The penalty smoothed the hidden-state path by \qpathred\% with forecast
 error equivalent within $\pm2\%$. At one alarm per station-year the defect detected \podallDone\ of
 onsets, against \chanceallDone\ for randomly timed alarms. By the onset date it had detected
 \dlDonezero\ of onsets against \dlDthreezero\ for SPI-90 (difference \dldiffDoneDthreezero,
 95\% CI \dldiffloDoneDthreezero\ to \dldiffhiDoneDthreezero); within 120 days SPI-90 detected more
 (\podallDthree; difference \dpodallDoneDthree, CI \dpodloallDoneDthree\ to \dpodhiallDoneDthree).
-Combining the two (post hoc) retained SPI-90's sensitivity and detected more onsets within 30 and 60
-days. Daily SPI-30 reproduced most of the defect's speed, and a temperature-aware extension improved
-forecasts but weakened the defect as a monitor (\mvpodallDeight\ of onsets against \mvpodallDoneone\ for
-SPEI-90). The penalty's contribution to monitoring was not statistically detectable and needs more data.
+Their combination (post hoc) kept SPI-90's sensitivity and detected more onsets within 60 days. SPI-30
+reproduced most of the defect's speed; a temperature-aware extension improved forecasts but weakened the
+defect's monitoring (detection \mvpodallDeight\ against \mvpodallDoneone\ for SPEI-90). The penalty's contribution to monitoring was not statistically detectable and needs more data.
 Results held under one-to-one matching, alternative windows, fixed-reference events and
 forward-chaining validation. The defect is a fast, short-memory signal that can complement SPI-90.}
 
@@ -151,9 +150,14 @@ Taiwan, ahead of the spring 2021 drought \citep{chou2022} (Online Resource 1, Fi
 precipitation, and we return to this limitation in Section~\ref{sec:limits}.
 
 \subsection{Study periods}
-All networks and all climatological reference distributions are estimated on 1961--1990, the last
-three years of which serve as an early-stopping validation set. Alarm thresholds are calibrated on
-1991--2000. All warning and forecast results refer to 2001--2024, which no fitting step uses.
+The networks and the reference distributions of the precipitation-based detectors (the SPI and SPEI
+fits and the day-of-year standardisation of the detector scores) are estimated on 1961--1990, the last
+three years of which serve as an early-stopping validation set for the networks. Alarm thresholds are
+calibrated on 1991--2000. All warning and forecast results refer to 2001--2024, which no network fit,
+index fit or threshold calibration uses. The soil-moisture reference is separate from these periods:
+the percentiles that date the reference events use 1981--2024 in the pre-specified definition and
+1981--2000 in the fixed-reference check (Sections~\ref{sec:events} and~\ref{sec:scoring}), and the
+MERRA-2 covariate anomalies of Section~\ref{sec:physical_methods} are relative to 1981--2010.
 
 % ======================================================================
 \section{Methods}\label{sec:methods}
@@ -265,8 +269,11 @@ own. We therefore
 compare detectors at a matched \emph{alarm budget}. For each region and detector, the threshold $h$ (or
 $c$) is chosen on a fine grid so that the detector raises, pooled over stations, $\beta$ alarms per
 station-year during 1991--2000. The primary budget is $\beta=1$; $\beta=0.5$ and $\beta=2$ are
-sensitivity analyses. Every detector then spends the same number of alarms, and differences on
-2001--2024 reflect where the alarms fall rather than how many there are. Budgets that a detector cannot
+sensitivity analyses. The detectors are thus calibrated to the same target alarm budget on 1991--2000.
+Their realised alarm frequencies and false-alarm rates on 2001--2024 are evaluated separately and need not
+be identical, so the comparisons reflect a common historical calibration budget rather than identical
+realised false-alarm rates; the realised false-alarm rate is reported beside every detection rate, and
+paired differences in it beside every difference in detection. Budgets that a detector cannot
 attain (for example, a month-end rule cannot raise two alarms a year with a 90-day refractory period)
 are flagged. One correction to the pre-specified search was needed. The alarm count of the month-end
 down-crossing rule (D4) is not monotone in $c$, and in some regions the unconstrained search met the budget
@@ -424,7 +431,7 @@ random-timing reference. With one alarm a year and a 180-day window, the defect'
 \chanceallDone\ of onsets if they were timed at random (95\% range \chanceloallDone\ to
 \chancehiallDone), and the reference is similar for the other detectors. The defect, its ablation, SPI-90,
 SPI-30 and SPI-3 lie well above it; the forecast residual lies below it. Pooled false-alarm rates were similar
-across the daily detectors, as the matched budget intends, although in Germany the defect raised more
+across the daily detectors, as the common calibration budget intends, although in Germany the defect raised more
 false alarms than SPI-90 (Table~\ref{tab:paired}).
 
 The monthly SPI-3 entries use the dry-side calibration of Section~\ref{sec:calibration}. Under the
@@ -694,8 +701,8 @@ investigation; what the state encodes is shaped by its training objective, which
 The design choices that changed our conclusions relative to the exploratory study are not specific to
 this method. Using
 an independently defined event set rather than one detector's alarm as the reference avoids rewarding
-whichever detector is fastest. Matching alarm budgets prevents a detector from appearing earlier
-because it alarms more often; nominal ARL calibration on autocorrelated, seasonal data need not
+whichever detector is fastest. Calibrating to a common alarm budget limits how far a detector can appear
+earlier because it alarms more often, provided the realised false-alarm rates are reported as well; nominal ARL calibration on autocorrelated, seasonal data need not
 equalise alarm rates. Timing compared on jointly detected events is conditional on both detectors
 alarming, so it should be read together with detection by deadline, which counts every onset and shows
 speed and sensitivity at once. Including
