@@ -8,7 +8,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import ROOT, REGIONS, load_region
 
-T = os.path.join(ROOT, "tex", "tables")
+T = os.environ.get("TABLES_OUT") or os.path.join(ROOT, "tex", "tables")
 RN = {"texas": "Central Texas", "germany": "Germany", "australia": "SE Australia", "taiwan": "Taiwan", "all": "All regions"}
 DN = {"D8": r"D8 defect (T), $\lambda>0$", "D9": r"D9 defect (T), $\lambda=0$",
       "D10": "D10 SPEI-30 (daily)", "D11": "D11 SPEI-90 (daily)", "D12": "D12 forecast residual, mv",
@@ -47,21 +47,31 @@ def ci(e, lo, hi, d=2, sign=False):
 
 
 def data_table():
+    """Station networks. The statistics need the daily inputs (data/<region>/daily_precip_long.csv);
+    they are cached in results/checks/data_table.csv and read from there when the inputs are absent."""
+    cache = os.path.join(ROOT, "results", "checks", "data_table.csv")
+    if all(os.path.exists(os.path.join(ROOT, "data", r, "daily_precip_long.csv")) for r in REGIONS):
+        rec = []
+        for r in REGIONS:
+            m, P = load_region(r)
+            e = pd.read_csv(os.path.join(ROOT, "results", "panel", f"{r}_events.csv"))
+            e = e[pd.to_datetime(e.onset_date).dt.year >= 2001]
+            yr = P.resample("YE")
+            emv = pd.read_csv(os.path.join(ROOT, "results", "panel_mv", f"{r}_events.csv"), dtype={"station_id": str})
+            rec.append(dict(region=r, stations=len(m), events=len(e), median_duration=float(np.median(e.duration)),
+                            missing_pct=100 * float(P[(P.index.year >= 1961)].isna().mean().mean()),
+                            annual_p=float((yr.sum() / yr.count().clip(lower=1) * 365.25).mean().median()),
+                            stations_mv=int(pd.read_csv(os.path.join(ROOT, "results", "warning_mv", "station_year.csv"),
+                                                        dtype={"station_id": str}).query("region == @r").station_id.nunique())))
+        pd.DataFrame(rec).to_csv(cache, index=False)
+    D = pd.read_csv(cache).set_index("region")
     rows = []
-    ev = {}
     for r in REGIONS:
-        m, P = load_region(r)
-        e = pd.read_csv(os.path.join(ROOT, "results", "panel", f"{r}_events.csv"))
-        e = e[pd.to_datetime(e.onset_date).dt.year >= 2001]
-        ev[r] = len(e)
-        miss = float(P[(P.index.year >= 1961)].isna().mean().mean())
-        yr = P.resample("YE")
-        ann = float((yr.sum() / yr.count().clip(lower=1) * 365.25).mean().median())   # observed-day mean x 365.25
+        d = D.loc[r]
         src = "CWA (Raingel)" if r == "taiwan" else "GHCN-Daily"
-        rows.append(f"{RN[r]} & {src} & {len(m)} & {ann:.0f} & {100*miss:.1f} & {len(e)} & {np.median(e.duration):.0f} \\\\")
-        mac(f"nst{r}", len(m)); mac(f"nev{r}", len(e))
-    tot_st = sum(len(load_region(r)[0]) for r in REGIONS)
-    mac("nstall", tot_st); mac("nevall", sum(ev.values()))
+        rows.append(f"{RN[r]} & {src} & {int(d.stations)} & {d.annual_p:.0f} & {d.missing_pct:.1f} & {int(d.events)} & {d.median_duration:.0f} \\\\")
+        mac(f"nst{r}", int(d.stations)); mac(f"nev{r}", int(d.events))
+    mac("nstall", int(D.stations.sum())); mac("nevall", int(D.events.sum()))
     tex = r"""\begin{table}[tbp]
 \caption{Station networks and reference drought events. Annual precipitation is the median over
 stations of the mean annual total (1961--2024; each year's mean over observed days times 365.25); missing is the mean percentage of missing days;
@@ -147,6 +157,8 @@ def warning_table(budget=1.0, fname="warning.tex", label="tab:warning", dets=("D
     S = pd.read_csv(os.path.join(ROOT, "results", "warning", "summary.csv"))
     Th = pd.read_csv(os.path.join(ROOT, "results", "warning", "thresholds.csv"))
     S = S[S.budget == budget]
+    D4 = pd.read_csv(os.path.join(ROOT, "results", "warning", "spi3_dryside.csv"))
+    D4 = D4[D4.budget == budget].set_index("group")
     prim = budget == 1.0
     C = chance_ref() if prim else None
     ncol = 5 if prim else 3
@@ -155,17 +167,16 @@ def warning_table(budget=1.0, fname="warning.tex", label="tab:warning", dets=("D
         n = int(S[(S.group == g)].n_events.iloc[0])
         lines.append(f"\\multicolumn{{{ncol}}}{{l}}{{\\textit{{{RN[g]}}} ({n} events)}}\\\\")
         for d in dets:
-            s = S[(S.group == g) & (S.det == d)].iloc[0]
+            s = D4.loc[g] if d == "D4" else S[(S.group == g) & (S.det == d)].iloc[0]
             flag = ""
             if g != "all":
                 t = Th[(Th.region == g) & (Th.det == d) & (Th.budget == budget)].iloc[0]
-                flag = "" if t.attained else "$^{\\ast}$"
-            wet = Th[(Th.det == "D4") & (Th.budget == budget) & (Th.thr > 0)].region.tolist()
-            if d == "D4" and (g in wet or (g == "all" and wet)):
+                flag = "" if (bool(s.attained_dryside) if d == "D4" else t.attained) else "$^{\\ast}$"
+            if d == "D4":
                 flag += "$^{\\ddagger}$"
             if prim:
                 tim = "--" if not np.isfinite(s.timing_med) else f"{s.timing_med:+.0f} [{s.timing_lo:+.0f}, {s.timing_hi:+.0f}]"
-                c = C.loc[(g, d)]
+                c = pd.Series(dict(pod_chance=s.pod_chance, lo=s.chance_lo, hi=s.chance_hi)) if d == "D4" else C.loc[(g, d)]
                 lines.append(f"\\quad {DN[d]}{flag} & {ci(s.pod, s.pod_lo, s.pod_hi)} & {c.pod_chance:.2f} & {ci(s.far, s.far_lo, s.far_hi)} & {tim} \\\\")
                 mac(f"chance{g}{d}", f"{c.pod_chance:.3f}"); mac(f"chancelo{g}{d}", f"{c.lo:.3f}"); mac(f"chancehi{g}{d}", f"{c.hi:.3f}")
             else:
@@ -174,7 +185,7 @@ def warning_table(budget=1.0, fname="warning.tex", label="tab:warning", dets=("D
             lines.append(r"\midrule")
         if budget == 1.0:
             for d in dets:
-                s = S[(S.group == g) & (S.det == d)].iloc[0]
+                s = D4.loc[g] if d == "D4" else S[(S.group == g) & (S.det == d)].iloc[0]
                 mac(f"pod{g}{d}", f"{s.pod:.3f}"); mac(f"far{g}{d}", f"{s.far:.2f}")
                 if np.isfinite(s.timing_med):
                     mac(f"tim{g}{d}", f"{s.timing_med:+.0f}")
@@ -191,9 +202,9 @@ station-year (calibrated on 1991--2000). POD: probability of detection within $[
 reference onset; FAR: false alarms per station-year of non-drought exposure""" + extra + r""". Brackets: 95\%
 cluster-bootstrap intervals (calendar years resampled within region). $^{\dagger}$Post hoc (not
 pre-specified). $^{\ast}$Budget not attained within 10\% in calibration (closest attainable rate used).
-$^{\ddagger}$The calibrated SPI-3 threshold is positive (wet side) in this region, or in a region pooled
-here, so the entry is not informative about the index (dry-side calibration: Online Resource 1,
-Table~""" + ("\\ref{S-tab:spithree}" if prim else "\\ref{tab:spithree}") + r""").}
+$^{\ddagger}$Threshold calibrated on the dry side, $c\le0$ (post hoc correction,
+Section~""" + ("\\ref{sec:calibration}" if prim else "\\ref{sec:matching}") + r"""); the pre-specified calibration is in
+Table~""" + ("\\ref{S-tab:spithree}" if prim else "\\ref{tab:spithree}") + (" of Online Resource 1" if prim else "") + r""".}
 \label{""" + label + r"""}
 \footnotesize\setlength{\tabcolsep}{2pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep\fill}l""" + ("cccc" if prim else "cc") + r"""}
@@ -212,9 +223,8 @@ def paired_table():
     P = pd.read_csv(os.path.join(ROOT, "results", "warning", "paired.csv"))
     PT = pd.read_csv(os.path.join(ROOT, "results", "warning", "paired_timing.csv"))
     P = P[P.budget == 1.0]
-    Th = pd.read_csv(os.path.join(ROOT, "results", "warning", "thresholds.csv"))
-    WET = Th[(Th.det == "D4") & (Th.budget == 1.0) & (Th.thr > 0)].region.tolist()
-    WET = WET + (["all"] if WET else [])
+    D4 = pd.read_csv(os.path.join(ROOT, "results", "warning", "spi3_dryside.csv"))
+    D4 = D4[D4.budget == 1.0].set_index("group")
     comps = [("D1-D2", "D2 minus D1", r"D1 vs D2 ($\lambda=0$)"), ("D1-D3", "D3 minus D1", "D1 vs D3 (SPI-90)"),
              ("D1-D4", "D4 minus D1", "D1 vs D4 (SPI-3)"), ("D1-D7", "D7 minus D1", r"D1 vs D7 (SPI-30)$^{\dagger}$"),
              ("D7-D3", "D3 minus D7", r"D7 vs D3$^{\dagger}$"), ("D6-D3", "D3 minus D6", r"D6 vs D3$^{\dagger}$")]
@@ -224,7 +234,12 @@ def paired_table():
         for c, ct, lab in comps:
             p = P[(P.group == g) & (P.comp == c)].iloc[0]
             t = PT[(PT.group == g) & (PT.comp == ct)].iloc[0]
-            wetf = "$^{\\ddagger}$" if (c == "D1-D4" and g in WET) else ""
+            wetf = ""
+            if c == "D1-D4":     # monthly SPI-3 with the dry-side threshold (spi3_dryside.csv)
+                x = D4.loc[g]; wetf = "$^{\\ddagger}$"
+                p = pd.Series(dict(dpod=x.dpod, dpod_lo=x.dpod_lo, dpod_hi=x.dpod_hi, dfar=x.dfar, dfar_lo=x.dfar_lo, dfar_hi=x.dfar_hi))
+                t = pd.Series(dict(median_diff=x.dtiming, lo=x.dtiming_lo, hi=x.dtiming_hi, n_both=x.n_both,
+                                   frac_first_earlier=x.frac_first_earlier))
             lines.append(f"\\quad {lab}{wetf} & {ci(p.dpod, p.dpod_lo, p.dpod_hi, 3, True)} & {ci(p.dfar, p.dfar_lo, p.dfar_hi, 2, True)} & "
                          f"{t.median_diff:+.1f} [{t.lo:+.1f}, {t.hi:+.1f}] & {int(t.n_both)} \\\\")
             key = c.replace("-", "")
@@ -238,9 +253,8 @@ def paired_table():
 \caption{Paired comparisons at the primary budget (1 alarm per station-year). $\Delta$POD and
 $\Delta$FAR are first minus second detector; $\Delta$timing is the median, over events detected by both,
 of (second detector's alarm $-$ first detector's alarm), so positive values mean the first detector
-alarms earlier. Brackets: 95\% cluster-bootstrap intervals. $^{\dagger}$Post hoc. $^{\ddagger}$Distorted by
-the wet-side SPI-3 threshold (Table~\ref{tab:warning}); with a dry-side threshold the pooled $\Delta$POD is
-\spithreedrydpodall.}
+alarms earlier. Brackets: 95\% cluster-bootstrap intervals. $^{\dagger}$Post hoc. $^{\ddagger}$SPI-3
+threshold calibrated on the dry side (post hoc correction; Table~\ref{tab:warning}).}
 \label{tab:paired}
 \footnotesize\setlength{\tabcolsep}{4pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccr}
@@ -401,10 +415,11 @@ def mv_tables():
         mac(f"mvnev{g}", n)
         if g != "all":
             lines.append(r"\midrule")
-    nst = sum(len(np.load(os.path.join(ROOT, "results", "panel_mv", f"{r}.npz"))["station_id"]) for r in REGIONS)
+    DT = pd.read_csv(os.path.join(ROOT, "results", "checks", "data_table.csv")).set_index("region")
+    nst = int(DT.stations_mv.sum())
     mac("mvnst", nst)
     for r in REGIONS:
-        mac(f"mvnst{r}", len(np.load(os.path.join(ROOT, "results", "panel_mv", f"{r}.npz"))["station_id"]))
+        mac(f"mvnst{r}", int(DT.loc[r].stations_mv))
     tex = r"""\begin{table}[tbp]
 \caption{Temperature-aware analysis (Section~\ref{sec:mv}; """ + str(nst) + r""" stations with daily temperature):
 event-based warning skill on 2001--2024 at one alarm per station-year. Definitions as in
@@ -732,7 +747,7 @@ Window (d) & timing & D8 & D11 (SPEI-90) & D8 $-$ D11 & D8 $-$ D9 ($\lambda=0$)\
     for d in ["D1", "D2", "D3", "D7", "D6"]:
         assert al.loc[d].pod_lo > al.loc[d].hi                          # text: clearly above the reference
     assert al.loc["D5"].pod < al.loc["D5"].lo                           # text: forecast residual below the reference
-    for r in ["germany", "australia"]:                                   # text: SPI-3 below the reference there
+    for r in ["germany", "australia"]:                # text: pre-specified SPI-3 below the random-timing reference there
         x = sm[(sm.group == r) & (sm.det == "D4")].iloc[0]; assert x.pod < x.lo
     smm = S["mv"][(S["mv"].rule == "prespecified") & (S["mv"].pre == 60) & (S["mv"].post == 120)].merge(chm, on=["group", "det"])
     x = smm[(smm.group == "all") & (smm.det == "D8")].iloc[0]
@@ -742,36 +757,39 @@ Window (d) & timing & D8 & D11 (SPEI-90) & D8 $-$ D11 & D8 $-$ D9 ($\lambda=0$)\
         mac(f"mvskill{r}", f"{x.pod - x.pod_chance:+.2f}")
     # SPI-3 with a dry-side threshold
     D4all = pd.read_csv(os.path.join(W[""], "spi3_dryside.csv"))
-    S0 = pd.read_csv(os.path.join(W[""], "summary.csv"))
+    S0 = pd.read_csv(os.path.join(W[""], "summary.csv")); P0 = pd.read_csv(os.path.join(W[""], "paired.csv"))
     lines = []
     for bud in [1.0, 0.5, 2.0]:
-        lines.append(f"\\multicolumn{{7}}{{l}}{{\\textit{{Budget {bud:g} alarm{'s' if bud != 1 else ''} per station-year}}}}\\\\")
+        lines.append(f"\\multicolumn{{8}}{{l}}{{\\textit{{Budget {bud:g} alarm{'s' if bud != 1 else ''} per station-year}}}}\\\\")
         for g in REGIONS + ["all"]:
             x = D4all[(D4all.budget == bud) & (D4all.group == g)].iloc[0]
-            p0 = S0[(S0.budget == bud) & (S0.group == g) & (S0.det == "D4")].pod.iloc[0]
+            s0 = S0[(S0.budget == bud) & (S0.group == g) & (S0.det == "D4")].iloc[0]
+            p0 = P0[(P0.budget == bud) & (P0.group == g) & (P0.comp == "D1-D4")].iloc[0]
             if g == "all":
                 c0 = c1 = "--"
             else:
                 c0 = f"{x.thr_prespecified:+.2f}"
                 c1 = f"{x.thr_dryside:+.2f} ({x.cal_rate_dryside:.2f}" + ("" if x.attained_dryside else "$^{\\ast}$") + ")"
-            lines.append(f"\\quad {RN[g]} & {c0} & {p0:.2f} & {c1} & {ci(x.pod, x.pod_lo, x.pod_hi)} & "
-                         f"{ci(x.far, x.far_lo, x.far_hi)} & {ci(x.dpod, x.dpod_lo, x.dpod_hi, 3, True)} \\\\")
+            lines.append(f"{RN[g]} & {c0} & {s0.pod:.2f} & {s0.far:.2f} & {ci(p0.dpod, p0.dpod_lo, p0.dpod_hi, 2, True)} & "
+                         f"{c1} & {ci(x.pod, x.pod_lo, x.pod_hi)} & {ci(x.dpod, x.dpod_lo, x.dpod_hi, 2, True)} \\\\")
         if bud != 2.0:
             lines.append(r"\midrule")
     tex = r"""\begin{table}[tbp]
-\caption{Monthly SPI-3 rule (D4) with its threshold restricted to the dry side, $c\le0$ (post hoc). The
-alarm count of a month-end down-crossing rule is not monotone in $c$, and the pre-specified grid search
-can meet a budget with a positive threshold. Columns: pre-specified threshold and POD; dry-side threshold
-with the calibration rate it attains in 1991--2000; POD and FAR on 2001--2024 under the pre-specified
-scoring rule; and the POD of the regularised defect (D1) minus that of SPI-3 at the same budget. Brackets:
-95\% year-cluster bootstrap intervals. $^{\ast}$Budget not attained within 10\%.}
+\caption{Monthly SPI-3 rule (D4): the pre-specified calibration and the dry-side calibration, $c\le0$,
+used in the tables of the main paper (post hoc correction). The alarm count of a month-end down-crossing
+rule is not monotone in $c$, and the pre-specified grid search can meet a budget with a positive
+threshold, which makes the rule alarm on returns from wet conditions. Columns: threshold $c$ (with the
+calibration rate attained in 1991--2000 for the dry side); POD and FAR on 2001--2024 under the
+pre-specified scoring rule; $\Delta$POD: regularised defect (D1) minus SPI-3 at the same budget. Where
+the pre-specified threshold is already negative the two calibrations coincide. Brackets: 95\%
+year-cluster bootstrap intervals. $^{\ast}$Budget not attained within 10\%.}
 \label{tab:spithree}
-\footnotesize\setlength{\tabcolsep}{1.5pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcccccc}
+\footnotesize\setlength{\tabcolsep}{0.5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccc}
 \toprule
-& \multicolumn{2}{c}{Pre-specified} & \multicolumn{4}{c}{Dry-side threshold}\\
-\cmidrule{2-3}\cmidrule{4-7}
-Region & $c$ & POD & $c$ (rate) & POD & FAR (per yr) & $\Delta$POD, D1 $-$ D4\\
+& \multicolumn{4}{c}{Pre-specified calibration} & \multicolumn{3}{c}{Dry-side calibration}\\
+\cmidrule{2-5}\cmidrule{6-8}
+Region & $c$ & POD & FAR & $\Delta$POD & $c$ (rate) & POD & $\Delta$POD\\
 \midrule
 """ + mm("\n".join(lines)) + r"""
 \botrule
@@ -780,36 +798,44 @@ Region & $c$ & POD & $c$ (rate) & POD & FAR (per yr) & $\Delta$POD, D1 $-$ D4\\
 """
     open(os.path.join(T, "spi3_dryside.tex"), "w").write(tex)
     D4 = D4all[D4all.budget == 1.0].set_index("group")
+    assert (D4.pod_lo > D4.chance_hi).drop("taiwan").all()               # text: dry-side SPI-3 well above the random-timing reference
     for r in REGIONS:
         mac(f"spithreethr{r}", f"{D4.loc[r].thr_prespecified:+.2f}"); mac(f"spithreedrythr{r}", f"{D4.loc[r].thr_dryside:+.2f}")
         mac(f"spithreedryrate{r}", f"{D4.loc[r].cal_rate_dryside:.2f}"); mac(f"spithreedrypod{r}", f"{D4.loc[r].pod:.2f}")
     assert D4.loc["germany"].thr_prespecified > 0 and D4.loc["australia"].thr_prespecified > 0
+    for r in REGIONS + ["all"]:
+        x0 = S0[(S0.budget == 1.0) & (S0.group == r) & (S0.det == "D4")].iloc[0]
+        mac(f"spithreeprepod{r}", f"{x0.pod:.2f}")
     mac("spithreedrypodall", f"{D4.loc['all'].pod:.3f}"); mac("spithreedryfarall", f"{D4.loc['all'].far:.2f}")
     mac("spithreedrydpodall", f"{D4.loc['all'].dpod:+.3f}"); mac("spithreedrydpodloall", f"{D4.loc['all'].dpod_lo:+.3f}")
     mac("spithreedrydpodhiall", f"{D4.loc['all'].dpod_hi:+.3f}")
 
     # ---- Table: episodes and overlap
     lines = []
+    GC = pd.read_csv(os.path.join(ROOT, "results", "checks", "grid_cells.csv")).set_index("region")
+    mac("ncellsall", int(GC.loc["all"].cells)); mac("nsharecell", int(GC.loc["all"].stations_sharing_a_cell))
     ov = O[(O.pre == 60) & (O.post == 120)].set_index(["region", "det"])
     for r in REGIONS + ["all"]:
         e = E[E.region == r].iloc[0]
-        lines.append(f"{RN[r]} & {int(e.stations)} & {int(e.station_onsets)} & {int(e.episodes)} & "
+        gc = GC.loc[r]
+        lines.append(f"{RN[r]} & {int(e.stations)} & {int(gc.cells)} & {int(e.station_onsets)} & {int(e.episodes)} & "
                      f"{100 * e.share_onsets_in_episodes_ge5:.0f} & {int(ov.loc[(r, 'D1')].events_overlapping_previous)} & "
                      f"{int(ov.loc[(r, 'D1')].hits_sharing_an_alarm)} / {int(ov.loc[(r, 'D3')].hits_sharing_an_alarm)} & "
                      f"{int(ov.loc[(r, 'D1')].credited_alarms_also_false)} / {int(ov.loc[(r, 'D3')].credited_alarms_also_false)} \\\\")
         mac(f"nepisodes{r}", int(e.episodes))
     mac("shareepisodes", f"{100 * E[E.region == 'all'].share_onsets_in_episodes_ge5.iloc[0]:.0f}")
     tex = r"""\begin{table}[tbp]
-\caption{Dependence among station-level events and overlap of scoring windows (2001--2024). Episodes: onsets
+\caption{Dependence among station-level events and overlap of scoring windows (2001--2024). Cells: distinct
+cells of the MERRA-2 grid ($0.5^\circ\times0.625^\circ$) that contain the stations. Episodes: onsets
 in a region linked when at most 30 days apart; share: percentage of station-level onsets in episodes of at
 least five onsets; overlapping: events whose $[-60,+120]$-day window overlaps that of the preceding event at
 the same station; shared: hits credited to an alarm that is also credited to another event; also false:
 credited alarms that the pre-specified rule also counts as false alarms (D1 / D3).}
 \label{tab:episodes}
 \footnotesize\setlength{\tabcolsep}{3pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrcc}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrrrrrrcc}
 \toprule
-Region & Stations & Onsets & Episodes & Share (\%) & Overlapping & Shared & Also false\\
+Region & Stations & Cells & Onsets & Episodes & Share (\%) & Overlapping & Shared & Also false\\
 \midrule
 """ + "\n".join(lines) + r"""
 \botrule
@@ -894,6 +920,219 @@ Validation scheme & First model & Second model & Third model\\
     open(os.path.join(T, "forward.tex"), "w").write(tex)
 
 
+def review_tables():
+    """Post hoc checks of PROTOCOL Amendment 3 (review_checks.py): detection by deadline, reference
+    events with a fixed climatology, forecast equivalence with year-cluster resampling."""
+    W = {"": os.path.join(ROOT, "results", "warning"), "mv": os.path.join(ROOT, "results", "warning_mv")}
+    L = {k: pd.read_csv(os.path.join(v, "deadline.csv")) for k, v in W.items()}
+    Df = {k: pd.read_csv(os.path.join(v, "deadline_diff.csv")) for k, v in W.items()}
+    X = {k: pd.read_csv(os.path.join(v, "deadline_cross.csv")) for k, v in W.items()}
+    dls = [-30, 0, 15, 30, 60, 90, 120]
+    lab = {"D1": r"D1 defect, $\lambda>0$", "D2": r"D2 defect, $\lambda=0$", "D3": "D3 SPI-90 (daily)",
+           "D7": "D7 SPI-30 (daily)", "D4": r"D4 SPI-3 (monthly)$^{\ddagger}$", "D6": "D6 D1+D3 combined",
+           "D8": r"D8 defect (T), $\lambda>0$", "D11": "D11 SPEI-90 (daily)", "D10": "D10 SPEI-30 (daily)"}
+    lines = [r"\multicolumn{8}{l}{\textit{Precipitation-only analysis} (1466 onsets)}\\"]
+    for k, dets in [("", ["D1", "D2", "D3", "D7", "D4", "D6"]), ("mv", ["D8", "D11", "D10"])]:
+        a = L[k][L[k].group == "all"]
+        if k == "mv":
+            lines += [r"\midrule", r"\multicolumn{8}{l}{\textit{Temperature-aware analysis} (1336 onsets)}\\"]
+        for d in dets:
+            x = a[a.det == d].set_index("deadline").frac
+            lines.append(f"\\quad {lab[d]} & " + " & ".join(f"{x.loc[dl]:.3f}" for dl in dls) + " \\\\")
+    assert int(L[""][(L[""].group == "all")].shape[0]) and True
+    tex = r"""\begin{table}[tbp]
+\caption{Detection by deadline, pooled over regions (post hoc): fraction of all reference onsets for which a
+detector has alarmed by day $d$ relative to the onset, counting alarms from day $-60$ on, at one alarm per
+station-year. A missed onset never counts, so the measure does not condition on detection; the value at
+$d=+120$ is the POD of the main paper. $^{\ddagger}$Dry-side calibration.}
+\label{tab:deadline}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccccccc}
+\toprule
+Detector & $d=-30$ & $0$ & $+15$ & $+30$ & $+60$ & $+90$ & $+120$\\
+\midrule
+""" + "\n".join(lines) + r"""
+\botrule
+\end{tabular*}
+\end{table}
+"""
+    fx = [0, 30, 60]
+    lines = []
+    for k, comps in [("", [("D1-D3", "D1 $-$ D3 (SPI-90)"), ("D1-D7", "D1 $-$ D7 (SPI-30)"), ("D1-D4", r"D1 $-$ D4 (SPI-3)$^{\ddagger}$"),
+                           ("D1-D2", r"D1 $-$ D2 ($\lambda=0$)"), ("D6-D3", "D6 $-$ D3"), ("D7-D3", "D7 $-$ D3")]),
+                     ("mv", [("D8-D11", "D8 $-$ D11 (SPEI-90)"), ("D8-D9", r"D8 $-$ D9 ($\lambda=0$)")])]:
+        a = Df[k][Df[k].group == "all"]
+        if k == "mv":
+            lines.append(r"\midrule")
+        for c, cl in comps:
+            x = a[a.comp == c].set_index("deadline")
+            lines.append(f"{cl} & " + " & ".join(ci(x.loc[dl, "diff"], x.loc[dl].lo, x.loc[dl].hi, 2, True) for dl in fx) + " \\\\")
+    tex += r"""
+\begin{table}[tbp]
+\caption{Paired differences in detection by deadline, pooled over regions, with 95\% year-cluster bootstrap
+intervals (post hoc). Positive values: the first detector has detected more of the onsets by day $d$;
+the differences at $d=+120$ are the $\Delta$POD of the main paper. $^{\ddagger}$Dry-side calibration.}
+\label{tab:deadlinediff}
+\footnotesize\setlength{\tabcolsep}{2pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lccc}
+\toprule
+Comparison & $d=0$ & $+30$ & $+60$\\
+\midrule
+""" + mm("\n".join(lines)) + r"""
+\botrule
+\end{tabular*}
+\end{table}
+"""
+    open(os.path.join(T, "deadline.tex"), "w").write(tex)
+    # macros and guarded statements
+    a = L[""][L[""].group == "all"]; d = Df[""][Df[""].group == "all"]; x = X[""][X[""].group == "all"].set_index("comp")
+    f = lambda det, dl: float(a[(a.det == det) & (a.deadline == dl)].frac.iloc[0])
+    g = lambda c, dl: d[(d.comp == c) & (d.deadline == dl)].iloc[0]
+    for det in ["D1", "D3", "D7", "D6", "D4"]:
+        for dl, nm in [(0, "zero"), (30, "thirty"), (60, "sixty")]:
+            mac(f"dl{det}{nm}", f"{f(det, dl):.3f}")
+    for c in ["D1-D3", "D1-D7", "D6-D3", "D1-D2"]:
+        for dl, nm in [(0, "zero"), (30, "thirty"), (60, "sixty")]:
+            r = g(c, dl); key = c.replace("-", "")
+            mac(f"dldiff{key}{nm}", f"{r['diff']:+.3f}"); mac(f"dldifflo{key}{nm}", f"{r.lo:+.3f}"); mac(f"dldiffhi{key}{nm}", f"{r.hi:+.3f}")
+    assert g("D1-D3", 0).lo > 0                       # text: ahead of SPI-90 at the onset date
+    assert f("D1", 0) == max(float(x) for x in a[a.deadline == 0].frac)   # text: highest fraction of any detector at onset
+    assert g("D1-D3", 60).hi < 0                      # text: behind SPI-90 from day 60
+    assert g("D6-D3", 30).lo > 0 and g("D6-D3", 60).lo > 0      # text: combination ahead of SPI-90 at 30 and 60 days
+    dd = d[(d.comp == "D6-D3") & (d.deadline >= 0)]
+    assert (dd.hi > 0).all()                          # text: combination never detectably behind SPI-90 after onset
+    dd = d[(d.comp == "D1-D2")]
+    assert ((dd.lo <= 0) & (dd.hi >= 0)).mean() > 0.9  # text: regularised vs ablation, no detectable difference at almost any deadline
+    mac("dlcrossDoneDthree", f"{x.loc['D1-D3'].first_ahead_until:.0f}"); mac("dlcrossDoneDseven", f"{x.loc['D1-D7'].first_ahead_until:.0f}")
+    am = L["mv"][L["mv"].group == "all"]
+    mac("dlmvDeightzero", f"{float(am[(am.det == 'D8') & (am.deadline == 0)].frac.iloc[0]):.3f}")
+    mac("dlmvDoneonezero", f"{float(am[(am.det == 'D11') & (am.deadline == 0)].frac.iloc[0]):.3f}")
+
+    # ---- fixed-reference events
+    EVc = {k: pd.read_csv(os.path.join(v, "fixedref_events.csv")).set_index("region") for k, v in W.items()}
+    FS = {k: pd.read_csv(os.path.join(v, "fixedref_summary.csv")) for k, v in W.items()}
+    FP = {k: pd.read_csv(os.path.join(v, "fixedref_paired.csv")) for k, v in W.items()}
+    S0 = {k: pd.read_csv(os.path.join(v, "summary.csv")) for k, v in W.items()}
+    P0 = {k: pd.read_csv(os.path.join(v, "paired.csv")) for k, v in W.items()}
+    T0 = {k: pd.read_csv(os.path.join(v, "paired_timing.csv")) for k, v in W.items()}
+    D4 = pd.read_csv(os.path.join(W[""], "spi3_dryside.csv")); D4 = D4[(D4.budget == 1.0) & (D4.group == "all")].iloc[0]
+    lines = [f"Reference onsets, 2001--2024 & {int(EVc[''].loc['all'].n_events_prespecified)} & {int(EVc[''].loc['all'].n_events_fixedref)} \\\\",
+             r"\midrule", r"\multicolumn{3}{l}{\textit{POD (random-timing reference)}}\\"]
+    ch0 = chance_ref()
+    for det in ["D1", "D2", "D3", "D7", "D4", "D6"]:
+        s1 = FS[""][(FS[""].group == "all") & (FS[""].det == det)].iloc[0]
+        if det == "D4":
+            p0, c0 = D4.pod, D4.pod_chance
+        else:
+            p0 = S0[""][(S0[""].budget == 1.0) & (S0[""].group == "all") & (S0[""].det == det)].pod.iloc[0]; c0 = ch0.loc[("all", det)].pod_chance
+        lines.append(f"\\quad {lab[det]} & {p0:.3f} ({c0:.2f}) & {s1.pod:.3f} ({s1.pod_chance:.2f}) \\\\")
+    lines += [r"\midrule", r"\multicolumn{3}{l}{\textit{Paired differences in POD}}\\"]
+    for c, cl in [("D1-D3", "D1 $-$ D3 (SPI-90)"), ("D1-D7", "D1 $-$ D7 (SPI-30)"), ("D1-D4", r"D1 $-$ D4 (SPI-3)$^{\ddagger}$"),
+                  ("D1-D2", r"D1 $-$ D2 ($\lambda=0$)"), ("D6-D3", "D6 $-$ D3")]:
+        p1 = FP[""][(FP[""].group == "all") & (FP[""].comp == c)].iloc[0]
+        p0 = D4 if c == "D1-D4" else P0[""][(P0[""].budget == 1.0) & (P0[""].group == "all") & (P0[""].comp == c)].iloc[0]
+        lines.append(f"\\quad {cl} & {ci(p0.dpod, p0.dpod_lo, p0.dpod_hi, 3, True)} & {ci(p1.dpod, p1.dpod_lo, p1.dpod_hi, 3, True)} \\\\")
+        key = c.replace("-", "")
+        mac(f"fixdpod{key}", f"{p1.dpod:+.3f}"); mac(f"fixdpodlo{key}", f"{p1.dpod_lo:+.3f}"); mac(f"fixdpodhi{key}", f"{p1.dpod_hi:+.3f}")
+    lines += [r"\midrule", r"\multicolumn{3}{l}{\textit{Timing on jointly detected events (d)}}\\"]
+    for c, ct, cl in [("D1-D3", "D3 minus D1", "D1 vs D3 (SPI-90)"), ("D1-D7", "D7 minus D1", "D1 vs D7 (SPI-30)"), ("D6-D3", "D3 minus D6", "D6 vs D3")]:
+        p1 = FP[""][(FP[""].group == "all") & (FP[""].comp == c)].iloc[0]
+        t0 = T0[""][(T0[""].group == "all") & (T0[""].comp == ct)].iloc[0]
+        lines.append(f"\\quad {cl} & {t0.median_diff:+.1f} [{t0.lo:+.1f}, {t0.hi:+.1f}] & {p1.dtiming:+.1f} [{p1.dtiming_lo:+.1f}, {p1.dtiming_hi:+.1f}] \\\\")
+    lines += [r"\midrule", f"\\multicolumn{{3}}{{l}}{{\\textit{{Temperature-aware analysis}} ({int(EVc['mv'].loc['all'].n_events_prespecified)} and "
+              f"{int(EVc['mv'].loc['all'].n_events_fixedref)} onsets)}}\\\\"]
+    chm = chance_ref("warning_mv")
+    for det in ["D8", "D11"]:
+        s1 = FS["mv"][(FS["mv"].group == "all") & (FS["mv"].det == det)].iloc[0]
+        p0 = S0["mv"][(S0["mv"].budget == 1.0) & (S0["mv"].group == "all") & (S0["mv"].det == det)].pod.iloc[0]
+        lines.append(f"\\quad POD, {lab[det]} & {p0:.3f} ({chm.loc[('all', det)].pod_chance:.2f}) & {s1.pod:.3f} ({s1.pod_chance:.2f}) \\\\")
+    for c, cl in [("D8-D11", "D8 $-$ D11 (SPEI-90)"), ("D8-D9", r"D8 $-$ D9 ($\lambda=0$)")]:
+        p1 = FP["mv"][(FP["mv"].group == "all") & (FP["mv"].comp == c)].iloc[0]
+        p0 = P0["mv"][(P0["mv"].budget == 1.0) & (P0["mv"].group == "all") & (P0["mv"].comp == c)].iloc[0]
+        lines.append(f"\\quad $\\Delta$POD, {cl} & {ci(p0.dpod, p0.dpod_lo, p0.dpod_hi, 3, True)} & {ci(p1.dpod, p1.dpod_lo, p1.dpod_hi, 3, True)} \\\\")
+    lines += [r"\midrule", r"\multicolumn{3}{l}{\textit{Incremental information, forward chaining ($\Delta$AUC)}}\\"]
+    for sub, comps in [("covariates", [("D1", "SPI-90 + D1"), ("SPI30", "SPI-90 + SPI-30"), ("SPI30+D1", "SPI-90 + SPI-30 + D1")]),
+                       ("covariates_mv", [("base+D8", "base + D8")])]:
+        F0 = pd.read_csv(os.path.join(ROOT, "results", sub, "incremental_forward.csv"))
+        F0 = F0[(F0.scheme == "forward") & (F0.period == "2001-2024") & (F0.group == "all")]
+        F1 = pd.read_csv(os.path.join(ROOT, "results", sub, "incremental_forward_fixedref.csv")); F1 = F1[F1.group == "all"]
+        for m, ml in comps:
+            cells = []
+            for F in (F0, F1):
+                x = F[F.model == m].iloc[0]
+                nd = 4 if max(abs(x.dauc), abs(x.dauc_lo), abs(x.dauc_hi)) < 0.005 else 3
+                cells.append(f"{x.dauc:+.{nd}f} [{x.dauc_lo:+.{nd}f}, {x.dauc_hi:+.{nd}f}]")
+            lines.append(f"\\quad {ml} & " + " & ".join(cells) + " \\\\")
+            if m in ("D1", "SPI30+D1", "base+D8"):
+                x = F1[F1.model == m].iloc[0]; key = m.replace("+", "p").replace("30", "thirty")
+                nd = 4 if max(abs(x.dauc), abs(x.dauc_lo), abs(x.dauc_hi)) < 0.005 else 3
+                mac(f"fixdauc{key}", f"{x.dauc:+.{nd}f}"); mac(f"fixdauclo{key}", f"{x.dauc_lo:+.{nd}f}"); mac(f"fixdauchi{key}", f"{x.dauc_hi:+.{nd}f}")
+                if m != "D1":
+                    assert x.dauc_lo <= 0     # text: nothing added beyond the short-window indices
+    tex = r"""\begin{table}[tbp]
+\caption{Sensitivity to the climatological reference of the event definition (post hoc), pooled over
+regions. Pre-specified: day-of-year soil-wetness percentiles computed over all years 1981--2024. Fixed
+reference: percentiles computed from 1981--2000 only and applied unchanged to 2001--2024, so that the
+dating of an onset uses no later year. Detector thresholds are unchanged. Brackets: 95\% year-cluster
+bootstrap intervals. $^{\ddagger}$Dry-side calibration. ``base'' = SPEI-90 + SPEI-30 + SPI-30.}
+\label{tab:fixedref}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcc}
+\toprule
+& Pre-specified events & Fixed reference, 1981--2000\\
+\midrule
+""" + mm("\n".join(lines)) + r"""
+\botrule
+\end{tabular*}
+\end{table}
+"""
+    open(os.path.join(T, "fixedref.tex"), "w").write(tex)
+    mac("nevfixall", int(EVc[""].loc["all"].n_events_fixedref))
+    s1 = FS[""][FS[""].group == "all"].set_index("det")
+    mac("fixpodDone", f"{s1.loc['D1'].pod:.3f}"); mac("fixpodDthree", f"{s1.loc['D3'].pod:.3f}"); mac("fixchanceDone", f"{s1.loc['D1'].pod_chance:.2f}")
+    p1 = FP[""][FP[""].group == "all"].set_index("comp")
+    mac("fixdtimDoneDthree", f"{p1.loc['D1-D3'].dtiming:.0f}")
+    assert p1.loc["D1-D3"].dpod_hi < 0 and p1.loc["D1-D7"].dpod_hi < 0 and p1.loc["D1-D2"].dpod_lo < 0 < p1.loc["D1-D2"].dpod_hi
+    assert p1.loc["D1-D3"].dtiming_lo > 0 and s1.loc["D1"].pod_lo > s1.loc["D1"].chance_hi
+    pm = FP["mv"][FP["mv"].group == "all"].set_index("comp"); assert pm.loc["D8-D11"].dpod_hi < 0
+
+    # ---- forecast equivalence under year-cluster resampling
+    lines = []
+    for sub, hd in [("forecast", "Precipitation-only networks"), ("forecast_mv", "Temperature-aware networks")]:
+        C = pd.read_csv(os.path.join(ROOT, "results", sub, "cluster_equivalence.csv"))
+        lines.append(f"\\multicolumn{{6}}{{l}}{{\\textit{{{hd}}}}}\\\\")
+        for g in REGIONS + ["all"]:
+            a = C[(C.group == g) & (C.comp == "rmrnn-lam0")].iloc[0]; b = C[(C.group == g) & (C.comp == "rmrnn-gru")].iloc[0]
+            iv = lambda lo, hi: f"[{100*lo:+.2f}, {100*hi:+.2f}]"
+            lines.append(f"\\quad {RN[g]} & {int(a.n)} & {iv(a.station_ci90_lo, a.station_ci90_hi)} & {iv(a.cluster_ci90_lo, a.cluster_ci90_hi)} & "
+                         f"{iv(b.station_ci90_lo, b.station_ci90_hi)} & {iv(b.cluster_ci90_lo, b.cluster_ci90_hi)} \\\\")
+        if sub == "forecast":
+            assert C.equivalent_cluster.all(); lines.append(r"\midrule")     # text: equivalence in every region under both intervals
+        else:
+            bad = C[~C.equivalent_cluster]
+            assert list(bad.group) == ["australia"] and list(bad.comp) == ["rmrnn-gru"]
+    tex = r"""\begin{table}[tbp]
+\caption{Forecast equivalence under two resampling units (post hoc): 90\% intervals for the mean relative
+difference in MSE (\%) between the regularised network and its $\lambda=0$ ablation or the GRU. Station:
+$t$ interval over stations, as in the main paper. Year cluster: percentile interval from resampling the 24
+calendar years within each region (2000 replicates), which keeps the dependence among stations that share
+weather. An interval inside $\pm2\%$ establishes equivalence.}
+\label{tab:forecastcluster}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrcccc}
+\toprule
+& & \multicolumn{2}{c}{vs $\lambda=0$} & \multicolumn{2}{c}{vs GRU}\\
+\cmidrule{3-4}\cmidrule{5-6}
+Region & $n$ & Station & Year cluster & Station & Year cluster\\
+\midrule
+""" + mm("\n".join(lines)) + r"""
+\botrule
+\end{tabular*}
+\end{table}
+"""
+    open(os.path.join(T, "forecast_cluster.tex"), "w").write(tex)
+
+
 def check_macros():
     """Macros for descriptive statements in the text (results/checks/, written by text_checks.py).
     The assertions stop the build if a sentence in the paper would no longer match the results."""
@@ -967,7 +1206,7 @@ def check_macros():
 if __name__ == "__main__":
     os.makedirs(T, exist_ok=True)
     data_table(); forecast_table(); warning_table(); paired_table(); covariate_tables(); threshold_table()
-    mv_tables(); robustness_tables()
+    mv_tables(); robustness_tables(); review_tables()
     warning_table(0.5, "warning_b05.tex", "tab:warning05", ("D1", "D2", "D3", "D4", "D5", "D7"))
     warning_table(2.0, "warning_b2.tex", "tab:warning2", ("D1", "D2", "D3", "D4", "D5", "D7"))
     check_macros()

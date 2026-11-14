@@ -75,6 +75,8 @@ def fig_amoc():
     for ax, r in zip(axs.ravel(), REGIONS):
         for d in ["D1", "D2", "D3", "D4", "D5", "D7"]:
             a = A[(A.region == r) & (A.det == d)].sort_values("far_per_yr")
+            if d == "D4":
+                a = a[a.thr <= 1e-9]          # dry-side thresholds only (c <= 0)
             if d == "D4":   # month-end threshold rule: alarm counts are not monotone in c
                 ax.scatter(a.far_per_yr, a.pod, color=COL[d], s=9, label=DLAB[d], zorder=1)
             else:
@@ -120,7 +122,8 @@ def fig_traces(cases):
     station-year), root-zone soil-wetness percentile and reference onsets."""
     from evaluate_warning import alarms
     T = pd.read_csv(os.path.join(ROOT, "results", "warning", "thresholds.csv"))
-    fig, axs = plt.subplots(len(cases), 1, figsize=(10, 2.25 * len(cases)))
+    plt.rcParams.update({"font.size": 11, "axes.titlesize": 11})
+    fig, axs = plt.subplots(len(cases), 1, figsize=(7.4, 2.35 * len(cases)))
     for n, (ax, (r, sid, a, b, title)) in enumerate(zip(np.atleast_1d(axs), cases)):
         pn = np.load(os.path.join(ROOT, "results", "panel", f"{r}.npz"))
         i = list(pn["station_id"]).index(sid)
@@ -131,7 +134,7 @@ def fig_traces(cases):
         sm = pn["smpct"][i][sel]
         ax2.fill_between(d, 0, 100, where=sm < 20, color="#c8e6c9", alpha=0.7, lw=0)
         ax2.plot(d, sm, color="#2e7d32", lw=0.6, alpha=0.8)
-        ax2.set_ylim(0, 100); ax2.set_ylabel("Soil-wetness pct.", color="#2e7d32", fontsize=8)
+        ax2.set_ylim(0, 100); ax2.set_ylabel("Soil wetness (pct.)", color="#2e7d32")
         for k, det in enumerate(["D1", "D3", "D7"]):
             z = pn[det][i].astype(float)
             zm = pd.Series(z).rolling(30, min_periods=20).mean().values[sel]
@@ -143,14 +146,17 @@ def fig_traces(cases):
             if a <= pd.Timestamp(e.onset_date) <= b:
                 ax.axvline(pd.Timestamp(e.onset_date), color="k", lw=0.9, ls="--")
         ax.axhline(0, color="k", lw=0.4)
-        ax.set_ylim(-3.2, 2.2); ax.set_title(title, fontsize=9, loc="left")
-        ax.set_ylabel("30-day mean anomaly")
+        ax.set_ylim(-3.2, 2.2); ax.set_title(title, loc="left")
+        ax.set_ylabel("30-day anomaly")
+        import matplotlib.dates as mdates
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=4)); ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
         ax.set_zorder(ax2.get_zorder() + 1); ax.patch.set_visible(False)
     h, l = np.atleast_1d(axs)[0].get_legend_handles_labels()
     fig.legend(h + [plt.Line2D([], [], color="k", ls="--", lw=0.9)], l + ["reference onset"],
-               loc="lower center", ncol=4, frameon=False, fontsize=8, bbox_to_anchor=(0.5, -0.01))
-    fig.tight_layout(rect=(0, 0.03, 1, 1))
+               loc="lower center", ncol=2, frameon=False, fontsize=10.5, bbox_to_anchor=(0.5, -0.01))
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
     fig.savefig(os.path.join(FIG, "event_traces.pdf"))
+    plt.rcParams.update({"font.size": 9, "axes.titlesize": 9})
 
 
 def fig_association():
@@ -200,9 +206,48 @@ def fig_composite_mv():
     _finish22(fig, axs, "Days from soil-moisture onset", "Mean standardised anomaly", 2, 0.15, "event_composites_mv.pdf")
 
 
+def fig_deadline():
+    """Detection by deadline (review_checks.py): fraction of all reference onsets detected by day d,
+    pooled over regions (left), and paired differences with 95% bootstrap bands (right)."""
+    W = os.path.join(ROOT, "results", "warning")
+    L = pd.read_csv(os.path.join(W, "deadline.csv")); D = pd.read_csv(os.path.join(W, "deadline_diff.csv"))
+    L = L[L.group == "all"]; D = D[D.group == "all"]
+    plt.rcParams.update({"font.size": 11, "axes.titlesize": 11, "legend.fontsize": 10})
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(7.4, 3.5))
+    for d, lab, ls in [("D1", "D1 defect, λ>0", "-"), ("D3", "D3 SPI-90", "-"), ("D7", "D7 SPI-30", "--"),
+                       ("D4", "D4 SPI-3 (monthly)", ":"), ("D6", "D6 D1+D3 combined", "-.")]:
+        x = L[L.det == d]; a1.plot(x.deadline, x.frac, color=COL[d], lw=1.8, ls=ls, label=lab)
+    a1.axvline(0, color="k", lw=0.6); a1.set_xlim(-60, 120); a1.set_ylim(0, 0.8)
+    a1.set_xlabel("Days from soil-moisture onset"); a1.set_ylabel("Fraction of onsets detected")
+    a1.set_xticks([-60, -30, 0, 30, 60, 90, 120]); a1.grid(alpha=0.3, lw=0.4); a1.legend(frameon=False, loc="upper left", handlelength=2.4)
+    for c, lab, col in [("D1-D3", "D1 − D3", COL["D1"]), ("D6-D3", "D6 − D3", COL["D6"])]:
+        x = D[D.comp == c]
+        a2.fill_between(x.deadline, x.lo, x.hi, color=col, alpha=0.18, lw=0); a2.plot(x.deadline, x["diff"], color=col, lw=1.8, label=lab)
+    a2.axhline(0, color="k", lw=0.6); a2.axvline(0, color="k", lw=0.6); a2.set_xlim(-60, 120)
+    a2.set_xticks([-60, -30, 0, 30, 60, 90, 120]); a2.grid(alpha=0.3, lw=0.4)
+    a2.set_xlabel("Days from soil-moisture onset"); a2.set_ylabel("Difference in fraction detected")
+    a2.legend(frameon=False, loc="lower left")
+    fig.tight_layout(); fig.savefig(os.path.join(FIG, "deadline.pdf"))
+    plt.rcParams.update({"font.size": 9, "axes.titlesize": 9, "legend.fontsize": 8})
+
+
+def fig_deadline_regions():
+    """Detection by deadline in each region."""
+    L = pd.read_csv(os.path.join(ROOT, "results", "warning", "deadline.csv"))
+    fig, axs = _grid22()
+    for ax, r in zip(axs.ravel(), REGIONS):
+        for d, lab, ls in [("D1", "D1 defect, λ>0", "-"), ("D2", "D2 defect, λ=0", "--"), ("D3", "D3 SPI-90", "-"),
+                           ("D7", "D7 SPI-30", "--"), ("D4", "D4 SPI-3 (monthly)", ":"), ("D6", "D6 D1+D3 combined", "-.")]:
+            x = L[(L.group == r) & (L.det == d)]; ax.plot(x.deadline, x.frac, color=COL[d], lw=1.6, ls=ls, label=lab)
+        ax.axvline(0, color="k", lw=0.6); ax.set_xlim(-60, 120); ax.set_ylim(0, 0.9); ax.set_title(NAMES[r])
+        ax.set_xticks([-60, 0, 60, 120]); ax.grid(alpha=0.3, lw=0.4)
+    _finish22(fig, axs, "Days from soil-moisture onset", "Fraction of onsets detected", 3, 0.11, "deadline_regions.pdf")
+
+
 if __name__ == "__main__":
     os.makedirs(FIG, exist_ok=True)
-    what = sys.argv[1:] or ["map", "amoc", "composite", "association", "traces"]
+    what = sys.argv[1:] or ["map", "amoc", "composite", "association", "traces", "deadline"]
+    if "deadline" in what: fig_deadline(); fig_deadline_regions()
     if "map" in what: fig_map()
     if "amoc" in what: fig_amoc()
     if "composite" in what: fig_composite()

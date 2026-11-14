@@ -1,0 +1,48 @@
+\begin{table}[tbp]
+\caption{Sensitivity to the climatological reference of the event definition (post hoc), pooled over
+regions. Pre-specified: day-of-year soil-wetness percentiles computed over all years 1981--2024. Fixed
+reference: percentiles computed from 1981--2000 only and applied unchanged to 2001--2024, so that the
+dating of an onset uses no later year. Detector thresholds are unchanged. Brackets: 95\% year-cluster
+bootstrap intervals. $^{\ddagger}$Dry-side calibration. ``base'' = SPEI-90 + SPEI-30 + SPI-30.}
+\label{tab:fixedref}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lcc}
+\toprule
+& Pre-specified events & Fixed reference, 1981--2000\\
+\midrule
+Reference onsets, 2001--2024 & 1466 & 1800 \\
+\midrule
+\multicolumn{3}{l}{\textit{POD (random-timing reference)}}\\
+\quad D1 defect, $\lambda>0$ & 0.665 (0.46) & 0.655 (0.46) \\
+\quad D2 defect, $\lambda=0$ & 0.655 (0.47) & 0.654 (0.47) \\
+\quad D3 SPI-90 (daily) & 0.763 (0.46) & 0.718 (0.46) \\
+\quad D7 SPI-30 (daily) & 0.744 (0.47) & 0.714 (0.47) \\
+\quad D4 SPI-3 (monthly)$^{\ddagger}$ & 0.767 (0.50) & 0.757 (0.50) \\
+\quad D6 D1+D3 combined & 0.763 (0.47) & 0.729 (0.47) \\
+\midrule
+\multicolumn{3}{l}{\textit{Paired differences in POD}}\\
+\quad D1 $-$ D3 (SPI-90) & $-$0.098 [$-$0.140, $-$0.056] & $-$0.063 [$-$0.097, $-$0.028] \\
+\quad D1 $-$ D7 (SPI-30) & $-$0.079 [$-$0.112, $-$0.046] & $-$0.059 [$-$0.092, $-$0.029] \\
+\quad D1 $-$ D4 (SPI-3)$^{\ddagger}$ & $-$0.102 [$-$0.139, $-$0.061] & $-$0.102 [$-$0.136, $-$0.066] \\
+\quad D1 $-$ D2 ($\lambda=0$) & +0.010 [$-$0.009, +0.029] & +0.001 [$-$0.016, +0.017] \\
+\quad D6 $-$ D3 & +0.001 [$-$0.017, +0.018] & +0.011 [$-$0.006, +0.027] \\
+\midrule
+\multicolumn{3}{l}{\textit{Timing on jointly detected events (d)}}\\
+\quad D1 vs D3 (SPI-90) & +16.0 [+12.0, +22.0] & +19.0 [+14.0, +24.5] \\
+\quad D1 vs D7 (SPI-30) & +6.0 [+4.0, +7.0] & +6.0 [+5.0, +8.0] \\
+\quad D6 vs D3 & +5.0 [+4.0, +6.0] & +5.0 [+4.0, +5.0] \\
+\midrule
+\multicolumn{3}{l}{\textit{Temperature-aware analysis} (1336 and 1600 onsets)}\\
+\quad POD, D8 defect (T), $\lambda>0$ & 0.433 (0.43) & 0.444 (0.43) \\
+\quad POD, D11 SPEI-90 (daily) & 0.749 (0.49) & 0.721 (0.49) \\
+\quad $\Delta$POD, D8 $-$ D11 (SPEI-90) & $-$0.317 [$-$0.367, $-$0.266] & $-$0.276 [$-$0.328, $-$0.223] \\
+\quad $\Delta$POD, D8 $-$ D9 ($\lambda=0$) & $-$0.027 [$-$0.046, $-$0.010] & $-$0.022 [$-$0.037, $-$0.007] \\
+\midrule
+\multicolumn{3}{l}{\textit{Incremental information, forward chaining ($\Delta$AUC)}}\\
+\quad SPI-90 + D1 & +0.021 [+0.009, +0.034] & +0.026 [+0.012, +0.041] \\
+\quad SPI-90 + SPI-30 & +0.030 [+0.017, +0.044] & +0.037 [+0.023, +0.051] \\
+\quad SPI-90 + SPI-30 + D1 & $-$0.0004 [$-$0.0014, +0.0007] & $-$0.0001 [$-$0.0014, +0.0011] \\
+\quad base + D8 & $-$0.0015 [$-$0.0032, +0.0001] & $-$0.0008 [$-$0.0031, +0.0016] \\
+\botrule
+\end{tabular*}
+\end{table}

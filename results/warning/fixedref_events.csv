@@ -1,0 +1,6 @@
+region,n_events_prespecified,n_events_fixedref,drought_days_prespecified,drought_days_fixedref
+texas,466,551,46983,60569
+germany,433,473,60287,75319
+australia,416,603,44675,68176
+taiwan,151,173,16315,19892
+all,1466,1800,168260,223956

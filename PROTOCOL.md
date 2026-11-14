@@ -205,3 +205,48 @@ remain the primary results, and every item below is reported and labelled post h
   1.9, statsmodels 0.15, Numba 0.68): evaluate_warning.py (both panels) and drift_mv.py reproduce
   the stored result files exactly; covariate_analysis.py and covariate_analysis_mv.py reproduce
   them to within 2e-6. forecast_eval.py and the training scripts were not re-run.
+
+# AMENDMENT 3 — further post hoc checks and one correction
+Written 2026-11-14, AFTER every result above was known, in response to a second pre-submission
+review. Nothing in this amendment was pre-specified. Pre-specified results remain reported.
+
+## Correction: calibration of the monthly SPI-3 rule (D4)
+- Amendment 2 showed that the pre-specified grid search can meet the alarm budget with a positive
+  threshold c, at which the down-crossing rule alarms on returns from wet conditions. The tables
+  of the main paper now use D4 with its threshold restricted to c <= 0 (closest attainable rate,
+  calibrated on 1991-2000 as before). This is a correction of the comparator, made after the
+  results were seen, and is labelled post hoc wherever it appears.
+- The pre-specified calibration and its results are reported beside it in Online Resource 1.
+  Where the pre-specified threshold is already negative the two coincide.
+
+## Detection by deadline (code/serra/review_checks.py)
+- Timing compared on events detected by both detectors conditions on joint detection. The
+  unconditional summary is the fraction of all reference onsets for which a detector has alarmed
+  by day d relative to onset (alarms counted from day -60), d = -60..+120; a missed onset never
+  counts. Paired differences carry year-cluster bootstrap intervals (same resamples as the
+  warning evaluation).
+
+## Reference events from a fixed historical climatology (review_checks.py)
+- The pre-specified soil-wetness percentiles pool all years 1981-2024, so the dating of an onset
+  in an early evaluation year depends on later years. Sensitivity: percentile reference fixed to
+  1981-2000 (+/-15-day pooling), applied unchanged to 2001-2024; same run rules; all detectors
+  re-scored at their calibrated thresholds (calibration does not use the events).
+- The forward-chaining incremental-information analysis is repeated with labels from these
+  events (incremental_forward.py --fixedref).
+- Check: with the all-years reference the script reproduces the stored events exactly.
+
+## Forecast equivalence with year-cluster resampling (review_checks.py)
+- The pre-specified equivalence test uses t intervals over stations. Sensitivity: 90% percentile
+  intervals from resampling the 24 calendar years of 2001-2024 within region (2000 resamples),
+  with every station's MSE recomputed on the resampled years.
+
+## Other changes made with this amendment
+- The statement that timing on jointly detected events avoids selection effects is withdrawn.
+- The number of distinct MERRA-2 grid cells (0.5 x 0.625 degrees) containing the stations is
+  reported; the reference events are described as defined independently of the detector inputs.
+- The single-station trace figure moves to Online Resource 1; the pooled detection-by-deadline
+  figure takes its place in the main paper. The operating-curve figure shows SPI-3 for c <= 0.
+- code/serra/extract_intermediates.py writes results/checks/intermediates.npz (raw soil wetness,
+  station-year forecast errors); code/serra/verify_from_csv.py rebuilds every table and number
+  from the result files alone; make_tables.py caches the station-network statistics in
+  results/checks/data_table.csv so that it no longer needs the daily inputs.

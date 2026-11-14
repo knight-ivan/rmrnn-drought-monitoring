@@ -34,25 +34,25 @@ backward-coherence regularisation}
 \orgaddress{\city{Taipei}, \postcode{11529}, \country{Taiwan}}}
 
 \abstract{\mathversion{normal}The hidden state of a recurrent precipitation model is an attractive
-drought-monitoring statistic, but such learned statistics are rarely tested against standard indices
+drought-monitoring statistic, but such statistics are rarely tested against standard indices
 under operational controls. We propose backward-coherence regularisation, a penalty inspired by
 reverse-martingale theory that makes each hidden state reconstructable from its successor, monitor its
-reconstruction error (the \emph{defect}) by CUSUM, and assess it in a controlled evaluation framework.
-Following a written protocol, daily gauge records (1961--2024) from \nstall\ stations in central Texas,
-Germany, south-eastern Australia and Taiwan were scored against \nevall\ station-level drought onsets in
+reconstruction error (the \emph{defect}) by CUSUM, and evaluate it in a controlled framework.
+Following a written protocol, daily gauge records (1961--2024) from \nstall\ stations in Texas,
+Germany, Australia and Taiwan were scored against \nevall\ station-level drought onsets in
 2001--2024, defined from reanalysis soil moisture that no detector uses, at a matched alarm budget with
 year-cluster bootstrap intervals. The penalty smoothed the hidden-state path by \qpathred\% with forecast
 error equivalent within $\pm2\%$. At one alarm per station-year the defect detected \podallDone\ of
-onsets, against \chanceallDone\ for randomly timed alarms, and alarmed a median \dtimallDoneDthree\ days
-earlier than daily SPI-90 on events both detected; SPI-90 detected more onsets (\podallDthree; difference
-\dpodallDoneDthree, 95\% CI \dpodloallDoneDthree\ to \dpodhiallDoneDthree). Combining the two (post hoc) retained
-SPI-90's sensitivity and advanced its alarms by \dtimallDsixDthree\ days. Daily SPI-30 reproduced
-most of the defect's speed, and a temperature-aware extension improved forecasts but weakened the defect
-as a monitor (\mvpodallDeight\ of onsets against \mvpodallDoneone\ for SPEI-90). The penalty's
-contribution to monitoring was not statistically detectable and needs more data. Results held
-under one-to-one event matching, alternative windows and forward-chaining validation. The defect is a
-fast, short-memory signal that can complement SPI-90, and the framework applies to other learned
-statistics.}
+onsets, against \chanceallDone\ for randomly timed alarms. By the onset date it had detected
+\dlDonezero\ of onsets against \dlDthreezero\ for SPI-90 (difference \dldiffDoneDthreezero,
+95\% CI \dldiffloDoneDthreezero\ to \dldiffhiDoneDthreezero); within 120 days SPI-90 detected more
+(\podallDthree; difference \dpodallDoneDthree, CI \dpodloallDoneDthree\ to \dpodhiallDoneDthree).
+Combining the two (post hoc) retained SPI-90's sensitivity and detected more onsets within 30 and 60
+days. Daily SPI-30 reproduced most of the defect's speed, and a temperature-aware extension improved
+forecasts but weakened the defect as a monitor (\mvpodallDeight\ of onsets against \mvpodallDoneone\ for
+SPEI-90). The penalty's contribution to monitoring was not statistically detectable and needs more data.
+Results held under one-to-one matching, alternative windows, fixed-reference events and
+forward-chaining validation. The defect is a fast, short-memory signal that can complement SPI-90.}
 
 \keywords{sequential change detection, CUSUM, drought monitoring, standardized precipitation index,
 recurrent neural networks, event-based verification}
@@ -136,8 +136,10 @@ could not be fitted there. In Taiwan, 13 of 22 synoptic stations meet the comple
 \subsection{Reference drought events}\label{sec:events}
 Warning skill is scored against drought events defined from a quantity that no detector uses:
 root-zone soil wetness from the MERRA-2 reanalysis \citep{gelaro2017}, extracted at each gauge from the
-NASA POWER archive for 1981--2024. For each station, soil wetness is converted to a day-of-year
-percentile, pooling a $\pm15$-day window over all years. Following run theory \citep{yevjevich1967}, an
+NASA POWER archive for 1981--2024. The reanalysis grid is $0.5^\circ\times0.625^\circ$, and the \nstall\
+stations fall in \ncellsall\ of its cells, so neighbouring stations can share reference information. For
+each station, soil wetness is converted to a day-of-year percentile, pooling a $\pm15$-day window over all
+years 1981--2024 (a reference fixed to 1981--2000 is examined in Section~\ref{sec:scoring}). Following run theory \citep{yevjevich1967}, an
 event is a run of at least 30 consecutive days below the 20th percentile; runs separated by fewer than
 30 days are merged, and an event is kept only if the preceding 60 days were not in drought. The onset is
 the first day of the run. The target is therefore agricultural drought, defined independently of the
@@ -145,7 +147,7 @@ precipitation detectors and of the networks. The reference events include onsets
 central Texas, at the start of the driest 12-month period on record there \citep{hoerling2013}; in late
 June 2018 in Germany, during the 2018--2019 central European drought \citep{hari2020}; in 2018 and 2019
 in south-eastern Australia, during the 2017--2019 drought \citep{devanand2024}; and in October 2020 in
-Taiwan, ahead of the spring 2021 drought \citep{chou2022} (Fig.~\ref{fig:traces}). Reanalysis soil moisture is itself a model product forced partly by
+Taiwan, ahead of the spring 2021 drought \citep{chou2022} (Online Resource 1, Fig.~\ref{S-fig:traces}). Reanalysis soil moisture is itself a model product forced partly by
 precipitation, and we return to this limitation in Section~\ref{sec:limits}.
 
 \subsection{Study periods}
@@ -237,7 +239,8 @@ transformed to a standard normal quantile through a zero-inflated gamma distribu
 day of year on 1961--1990 with $\pm15$-day pooling \citep{stagge2015}.
 \item[D4, SPI-3:] the standard monthly index \citep{mckee1993,wmo2012}: monthly totals with at least
 90\% observed days, three-month sums, and a zero-inflated gamma distribution for each calendar month on
-1961--1990, updated once a month.
+1961--1990, updated once a month. Its threshold is restricted to the dry side
+(Section~\ref{sec:calibration}).
 \item[D5, forecast residual:] $z_t$ of $\tilde P_t-\hat y_t$ from the regularised network, which asks
 whether the defect carries information beyond the network's own forecast error.
 \end{description}
@@ -265,7 +268,12 @@ station-year during 1991--2000. The primary budget is $\beta=1$; $\beta=0.5$ and
 sensitivity analyses. Every detector then spends the same number of alarms, and differences on
 2001--2024 reflect where the alarms fall rather than how many there are. Budgets that a detector cannot
 attain (for example, a month-end rule cannot raise two alarms a year with a 90-day refractory period)
-are flagged. We also report threshold-free operating curves of the probability of detection against the
+are flagged. One correction to the pre-specified search was needed. The alarm count of the month-end
+down-crossing rule (D4) is not monotone in $c$, and in some regions the unconstrained search met the budget
+with a positive threshold, at which the rule alarms on returns from wet conditions rather than on drought.
+We therefore restrict the SPI-3 threshold to $c\le0$, which attains the budget equally well. The
+correction is post hoc, and the results under the pre-specified calibration are given in Online Resource
+1 (Table~\ref{S-tab:spithree}). We also report threshold-free operating curves of the probability of detection against the
 false-alarm rate over the threshold grid on 2001--2024, analogous to the activity-monitoring operating
 characteristic \citep{fawcett1999}.
 
@@ -299,9 +307,15 @@ bootstrap \citep{davison1997} that resamples the 24 calendar years within each r
 preserving the cross-station dependence within a year; regions are resampled independently. Differences
 between detectors are computed on the same replicates, giving paired percentile intervals. Because
 conditional timing among hits depends on which events each detector detects, timing is compared on
-events detected by both detectors. A drought that spans several years also links successive years, so as
+events detected by both detectors. That comparison conditions on joint detection and describes those
+events only. As an unconditional summary we also report \emph{detection by deadline} (post hoc): the
+fraction of all reference onsets for which a detector has alarmed by day $d$ relative to the onset, in
+which a missed onset never counts. A drought that spans several years also links successive years, so as
 a further post hoc check we repeat the bootstrap with circular blocks of two, three and four consecutive
-years \citep{kunsch1989}.
+years \citep{kunsch1989}. Finally, the pre-specified percentiles pool all years 1981--2024, so the dating
+of an onset in an early evaluation year uses later years. As a post hoc check the events are re-derived
+with the percentile reference fixed to 1981--2000 and applied unchanged to 2001--2024, and all detectors
+are re-scored at their calibrated thresholds, which do not depend on the events.
 
 \subsection{Physical association and incremental information}\label{sec:physical_methods}
 To relate the defect to the hydrometeorological state, we regress station-month means of the D1 anomaly on SPI-3 and on MERRA-2 anomalies of
@@ -371,7 +385,9 @@ ranged from \msssmin\ to \msssmax\ across regions (Table~\ref{tab:forecast}). Wi
 regularisation was neutral (Table~\ref{tab:forecastpaired}). Pooled over \nstall\ stations, the 90\% confidence interval for the relative
 MSE difference between the regularised network and its ablation was \msediffloall\% to \msediffhiall\%,
 and against the GRU \msediffgruloall\% to \msediffgruhiall\%; equivalence within $\pm2\%$ was
-established in every region (largest TOST $p$-value $\tostmax$). The regularisation reduced the
+established in every region (largest TOST $p$-value $\tostmax$). Intervals from resampling calendar
+years within region, which allow for the dependence among stations that share weather, lead to the same
+conclusion (Online Resource 1, Table~\ref{S-tab:forecastcluster}). The regularisation reduced the
 path increment by a median of \qpathred\% relative to the ablation (pooled Wilcoxon $p<10^{-4}$), with a
 similar reduction in each region. The penalty therefore does what it is designed to do, smoothing the
 state path, at no cost in forecast accuracy. Absolute $Q_{\mathrm{path}}$ values are not comparable
@@ -406,22 +422,17 @@ residual detected \podallDfive, although its threshold grid could not match the 
 Texas, Germany and Australia (Table~\ref{tab:warning}). These rates must be read against the
 random-timing reference. With one alarm a year and a 180-day window, the defect's alarms would detect
 \chanceallDone\ of onsets if they were timed at random (95\% range \chanceloallDone\ to
-\chancehiallDone), and the reference is similar for the other detectors. The defect, its ablation, SPI-90
-and SPI-30 lie well above it; the forecast residual lies below it. Pooled false-alarm rates were similar
+\chancehiallDone), and the reference is similar for the other detectors. The defect, its ablation, SPI-90,
+SPI-30 and SPI-3 lie well above it; the forecast residual lies below it. Pooled false-alarm rates were similar
 across the daily detectors, as the matched budget intends, although in Germany the defect raised more
 false alarms than SPI-90 (Table~\ref{tab:paired}).
 
-Monthly SPI-3 detected fewer onsets than its random-timing reference in Germany and Australia. The cause
-is the calibration, not the index. The alarm count of a down-crossing rule is not monotone in its
-threshold, and in these two regions the pre-specified grid search met the budget with a positive
-threshold ($c=\spithreethrgermany$ and $\spithreethraustralia$; Online Resource 1,
-Table~\ref{S-tab:thresholds}), so that the rule alarms when SPI-3 returns from wet conditions. Restricting
-the grid to $c\le0$ meets the budget equally well ($c=\spithreedrythrgermany$ and
-$\spithreedrythraustralia$) and raises the POD of SPI-3 to \spithreedrypodgermany\ and
-\spithreedrypodaustralia\ in these regions and to \spithreedrypodall\ pooled (post hoc; Online Resource
-1, Table~\ref{S-tab:spithree}). The pre-specified SPI-3 entries for Germany and Australia, and the pooled
-entries that include them, are therefore not informative about the index, and we base no conclusion on
-them. For a daily monitor, daily SPI-90 is the more relevant benchmark.
+The monthly SPI-3 entries use the dry-side calibration of Section~\ref{sec:calibration}. Under the
+pre-specified calibration the threshold was positive in Germany and Australia
+($c=\spithreethrgermany$ and $\spithreethraustralia$), and SPI-3 then detected fewer onsets there than
+randomly timed alarms (\spithreeprepodgermany\ and \spithreeprepodaustralia; \spithreeprepodall\ pooled;
+Online Resource 1, Table~\ref{S-tab:spithree}). With the dry-side thresholds
+($c=\spithreedrythrgermany$ and $\spithreedrythraustralia$) monthly SPI-3 is as sensitive as daily SPI-90.
 
 \input{tables/warning.tex}
 
@@ -431,11 +442,9 @@ intervals excluding zero in all but Taiwan), by
 \dpodallDoneDthree\ pooled (95\% CI \dpodloallDoneDthree\ to \dpodhiallDoneDthree), at a similar
 false-alarm rate. On the events both detected, however, the defect alarmed a median of
 \dtimallDoneDthree\ days earlier (CI \dtimloallDoneDthree\ to \dtimhiallDoneDthree), and earlier in
-\fearlyallDoneDthree\% of them. The defect is thus faster but less sensitive. The pre-specified
-comparison with monthly SPI-3 (pooled difference \dpodallDoneDfour) is distorted by the calibration
-artefact described above: with a dry-side threshold, SPI-3 detected more onsets than the defect
-(difference \spithreedrydpodall, CI \spithreedrydpodloall\ to \spithreedrydpodhiall), as it did under the
-pre-specified calibration in Texas, where the artefact does not arise. \emph{Does the regularisation
+\fearlyallDoneDthree\% of them. The defect is thus faster but less sensitive. Monthly SPI-3 also
+detected more onsets than the defect (difference \spithreedrydpodall, CI \spithreedrydpodloall\ to
+\spithreedrydpodhiall). \emph{Does the regularisation
 matter for monitoring?} We found no statistically detectable difference: the defect of the regularised
 network and of its ablation differed by \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to
 \dpodhiallDoneDtwo) and by a median of \dtimallDoneDtwo\ days in timing. The interval rules out a gain in
@@ -473,7 +482,13 @@ the differences depends on the window. When alarms that precede the onset are no
 $[0,+120]$), the difference from SPI-90 was \wzerodpodDoneDthree\ (CI \wzerodpodloDoneDthree\ to
 \wzerodpodhiDoneDthree) and the median timing advantage \wzerotimDoneDthree\ days, and SPI-30 was then
 less sensitive than SPI-90 as well (difference \wzerodpodDsevenDthree, CI \wzerodpodloDsevenDthree\ to
-\wzerodpodhiDsevenDthree). Resampling blocks of two to four consecutive years instead of
+\wzerodpodhiDsevenDthree). With the percentile reference of the event definition fixed to
+1981--2000 there are \nevfixall\ onsets in 2001--2024; the defect detected \fixpodDone\ of them
+(random-timing reference \fixchanceDone) and SPI-90 \fixpodDthree\ (difference \fixdpodDoneDthree, CI
+\fixdpodloDoneDthree\ to \fixdpodhiDoneDthree), the difference from the ablation was \fixdpodDoneDtwo\ (CI
+\fixdpodloDoneDtwo\ to \fixdpodhiDoneDtwo), and the defect alarmed \fixdtimDoneDthree\ days earlier than
+SPI-90 on jointly detected events (Online Resource 1, Table~\ref{S-tab:fixedref}). Resampling blocks of
+two to four consecutive years instead of
 single years changed the widths of the pooled intervals by factors of \blockratiolo--\blockratiohi\
 (Online Resource 1, Table~\ref{S-tab:blockboot}), so dependence carried by multi-year droughts does not
 alter the inference.
@@ -482,8 +497,8 @@ alter the inference.
 \centering
 \includegraphics[width=\textwidth]{operating_curves.pdf}
 \caption{Threshold-free operating curves on 2001--2024: probability of detection against false alarms
-per station-year as the threshold varies. SPI-3 is a month-end threshold rule whose alarm count is not
-monotone in the threshold and is shown as points}\label{fig:amoc}
+per station-year as the threshold varies. Monthly SPI-3 is a month-end rule and is shown as points,
+for dry-side thresholds ($c\le0$)}\label{fig:amoc}
 \end{figure}
 
 The post hoc combination D6 detected as many onsets as SPI-90 (difference \dpodallDsixDthree, CI
@@ -493,22 +508,29 @@ both detected (CI \dtimloallDsixDthree\ to \dtimhiallDsixDthree), with a false-a
 in Taiwan. It is a small gain from adding a short-memory component to SPI-90, comparable to what SPI-30
 provides.
 
-Figure~\ref{fig:traces} shows the droughts cited in Section~\ref{sec:events} at one station each,
-chosen for illustration rather than as a test. In the Texas, German and Australian cases the defect
-alarmed \traceDonelaglo--\traceDonelaghi\ days after the reference onset and
-\traceDthreeminusDonelo--\traceDthreeminusDonehi\ days before SPI-90, and SPI-30 alarmed
-\traceDsevenminusDonelo--\traceDsevenminusDonehi\ days after the defect. In the Taiwan case the defect
-did not alarm, whereas SPI-30 alarmed \traceDseventaiwan\ day before the onset and SPI-90
-\traceDthreetaiwan\ days after it.
+Detection by deadline shows speed and sensitivity together, without conditioning on which onsets a
+detector finds (Fig.~\ref{fig:deadline}; Online Resource 1, Tables~\ref{S-tab:deadline}
+and~\ref{S-tab:deadlinediff}). By the day of onset the defect had alarmed for \dlDonezero\ of all onsets,
+the highest fraction of any detector, against \dlDthreezero\ for SPI-90 (difference
+\dldiffDoneDthreezero, CI \dldiffloDoneDthreezero\ to \dldiffhiDoneDthreezero) and \dlDsevenzero\ for
+SPI-30. It stayed ahead of SPI-30 until day \dlcrossDoneDseven\ and of SPI-90 until day
+\dlcrossDoneDthree; by day 60 SPI-90 had overtaken it (difference \dldiffDoneDthreesixty, CI
+\dldiffloDoneDthreesixty\ to \dldiffhiDoneDthreesixty). The combination D6 was ahead of SPI-90 at 30
+days (\dlDsixthirty\ against \dlDthreethirty; difference \dldiffDsixDthreethirty, CI
+\dldiffloDsixDthreethirty\ to \dldiffhiDsixDthreethirty) and at 60 days (difference
+\dldiffDsixDthreesixty, CI \dldiffloDsixDthreesixty\ to \dldiffhiDsixDthreesixty) and matched it
+thereafter. The value of the defect therefore lies in the first weeks around the onset. Single-station
+traces of the droughts cited in Section~\ref{sec:events} are shown for illustration in Online Resource 1
+(Fig.~\ref{S-fig:traces}).
 
-\begin{figure}[p]
+\begin{figure}[tbp]
 \centering
-\includegraphics[width=\textwidth]{event_traces.pdf}
-\caption{Four droughts at illustrative stations. Lines: 30-day running means of the
-daily anomalies of the defect (D1), SPI-90 and SPI-30; triangles: alarms of each detector at the
-primary budget; shading: root-zone soil wetness below the 20th percentile (right axis: percentile);
-dashed lines: reference onsets. Gaps in SPI-30 are days with fewer than 27 observed days in the
-window}\label{fig:traces}
+\includegraphics[width=\textwidth]{deadline.pdf}
+\caption{Detection by deadline, pooled over regions, at one alarm per station-year. Left: fraction of all
+\nevall\ reference onsets for which a detector has alarmed by day $d$ relative to the onset (alarms
+counted from day $-60$); the value at day 120 is the POD of Table~\ref{tab:warning}. Right: paired
+differences from SPI-90 with 95\% year-cluster bootstrap bands. Post hoc; monthly SPI-3 with dry-side
+calibration}\label{fig:deadline}
 \end{figure}
 
 \subsection{What the defect measures}\label{sec:physical}
@@ -550,7 +572,11 @@ SPI-90 and SPI-30 changed it by \fwddaucallSPIthirtypDone\ (CI \fwddaucloallSPIt
 \fwddauchiallSPIthirtypDone). Within regions the forward-chaining intervals are wider, and the gain from
 adding the defect to SPI-90 alone is distinguishable from zero in Germany and Australia but not in Texas
 or Taiwan. A 60-day gap around the blocked folds and a six-year refitting interval gave the same pooled
-results (Online Resource 1, Table~\ref{S-tab:forward}). The defect thus carries statistically detectable
+results (Online Resource 1, Table~\ref{S-tab:forward}). With labels taken from the fixed-reference
+events, so that neither the model nor the label of a training week uses later years, the defect added
+\fixdaucDone\ (CI \fixdaucloDone\ to \fixdauchiDone) to SPI-90 and \fixdaucSPIthirtypDone\ (CI
+\fixdaucloSPIthirtypDone\ to \fixdauchiSPIthirtypDone) to SPI-90 and SPI-30 (Online Resource 1,
+Table~\ref{S-tab:fixedref}). The defect thus carries statistically detectable
 information about impending onset in the pooled data, but we found none beyond a 30-day precipitation
 summary, retrospectively or prospectively.
 
@@ -581,8 +607,8 @@ cannot be read as early warning. The penalty slightly reduced detection relative
 (\dpodallmvDeightDnine, CI \dpodloallmvDeightDnine\ to \dpodhiallmvDeightDnine). SPEI and SPI behaved
 almost identically: SPEI-30 and SPEI-90 detected about as many onsets as SPI-30 and SPI-90, and SPEI-30
 alarmed \dtimallmvDonezeroDoneone\ days earlier than SPEI-90 on jointly detected events. These comparisons
-were unchanged under the one-to-one rule and across the scoring windows (Online Resource 1,
-Table~\ref{S-tab:matchingmv}).
+were unchanged under the one-to-one rule, across the scoring windows and with the fixed-reference events
+(Online Resource 1, Tables~\ref{S-tab:matchingmv} and~\ref{S-tab:fixedref}).
 
 \input{tables/warning_mv.tex}
 \input{tables/paired_mv.tex}
@@ -628,18 +654,18 @@ more regular latent representation at no cost in accuracy.
 The second concerns monitoring: the defect of such a network carries a drought signal. It declines
 towards onset, clearly in three of the four regions and only briefly in Taiwan; it is associated with
 SPI-3 in every region and with soil moisture beyond SPI-3 in three; it detects \podallDone\ of onsets
-where randomly timed alarms would detect \chanceallDone; and it alarms before SPI-90 when both detect an
-onset, by a median of \dtimallDoneDthree\ days at the pre-specified window and by
-\windtimDoneDthreemin--\windtimDoneDthreemax\ days across the windows examined. A statistic that was never
+where randomly timed alarms would detect \chanceallDone; by the day of onset it has alarmed for
+\dlDonezero\ of all onsets, against \dlDthreezero\ for SPI-90; and on onsets that both detect it alarms a
+median of \dtimallDoneDthree\ days earlier. A statistic that was never
 trained on drought information thus yields a usable and early signal.
 
-The third concerns added value over standard indices. At a matched alarm budget, daily SPI-90 and
-SPI-30 detect more onsets than the defect, as does monthly SPI-3 once its threshold is calibrated on the
-dry side; the timing advantage over SPI-90 is mostly reproduced by SPI-30; and we found no predictive
+The third concerns added value over standard indices. At a matched alarm budget, daily SPI-90,
+SPI-30 and monthly SPI-3 detect more onsets than the defect within 120 days; the timing advantage over
+SPI-90 is mostly reproduced by SPI-30; and we found no predictive
 information beyond SPI-30 under retrospective or forward-chaining validation. The defect is therefore
 better viewed as a complement to a long-accumulation index than as a replacement for it: combined with
-SPI-90 it kept that index's sensitivity and advanced its alarms by a median of \dtimallDsixDthree\ days.
-Whether the regularisation itself contributes to monitoring remains open. The regularised and
+SPI-90 it kept that index's sensitivity and detected more onsets than SPI-90 alone within 30 and 60 days
+of the onset. Whether the regularisation itself contributes to monitoring remains open. The regularised and
 unregularised defects differed by \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to \dpodhiallDoneDtwo),
 which bounds any gain at about 0.03 at the precision of this study and establishes neither a benefit nor
 equivalence; more stations or longer records are needed to resolve a difference of that size.
@@ -670,7 +696,9 @@ this method. Using
 an independently defined event set rather than one detector's alarm as the reference avoids rewarding
 whichever detector is fastest. Matching alarm budgets prevents a detector from appearing earlier
 because it alarms more often; nominal ARL calibration on autocorrelated, seasonal data need not
-equalise alarm rates. Comparing timing on jointly detected events avoids selection effects. Including
+equalise alarm rates. Timing compared on jointly detected events is conditional on both detectors
+alarming, so it should be read together with detection by deadline, which counts every onset and shows
+speed and sensitivity at once. Including
 the ablation and a comparator with the same time scale as the learned model's memory exposes whether a
 learned statistic contributes more than its receptive field. Resampling years rather than station-events
 matters: here the year-cluster intervals for POD were \ciratiolo--\ciratiohi\ times as wide as naive
@@ -679,7 +707,8 @@ elements proved informative. A random-timing reference shows how much of a detec
 budget and the scoring window produce by themselves, here nearly half, and is a natural zero for skill.
 A rule whose alarm count is not monotone in its threshold, such as a month-end down-crossing rule, needs
 a sign constraint in calibration, as the SPI-3 case shows. And predictive value should be validated in
-time order; here the blocked and forward-chaining schemes agreed. These elements
+time order, with an event climatology fixed before the evaluation period; here the blocked and
+forward-chaining schemes, and the two event definitions, agreed. These elements
 can be applied unchanged to other learned monitoring statistics, such as autoencoder reconstruction
 errors or forecast residuals of deep models.
 
@@ -700,8 +729,8 @@ precipitation. This may favour precipitation-based detectors, and not necessaril
 time scales may match the memory of the reanalysis land-surface model to different degrees; it also
 targets agricultural rather than hydrological drought; other references, such as streamflow or official
 drought assessments like the U.S. Drought Monitor \citep{svoboda2002}, may rank detectors differently.
-The events are station-level onsets that cluster into regional episodes, so the effective sample is
-smaller than the event count; the year-cluster and block bootstraps allow for this, but more regions
+The events are station-level onsets that cluster into regional episodes, and \nsharecell\ stations share
+a reanalysis grid cell with another station, so the effective sample is smaller than the event count; the year-cluster and block bootstraps allow for this, but more regions
 would be needed to generalise across climates. The networks use one architecture with a 30-day window
 and 32 hidden units; longer windows or gated cells could change the defect. The temperature-aware
 analysis covers \mvnst\ of the stations, uses donor temperature records for some of them (in Australia a
@@ -711,7 +740,8 @@ intervals wide. The direction of the CUSUM was pre-specified as downward; an upw
 not evaluated. The protocol was kept as a dated file with the code and was not lodged with an external
 registry. Finally, several analyses were added after the primary results were seen and are labelled post
 hoc: SPI-30 and the combination; the one-to-one rule, the alternative windows, the random-timing
-reference, the block bootstrap, the dry-side calibration of SPI-3 and forward-chaining validation; the
+reference, the block bootstrap, the dry-side calibration of SPI-3, forward-chaining validation, detection
+by deadline, the fixed-reference events and the year-cluster forecast intervals; the
 temperature-aware analysis was specified in a protocol amendment after the primary results were known
 but before it was run.
 
@@ -720,11 +750,12 @@ A backward-coherence penalty makes the hidden-state path of a recurrent precipit
 without affecting forecast accuracy, and the reconstruction defect of the model carries a drought
 signal: at one alarm a year it detects about two thirds of soil-moisture drought onsets, well above a
 random-timing reference; it is associated with SPI-3 and, in three of four regions, with soil moisture;
-and it alarms earlier than SPI-90 when both detect an onset. Combined with SPI-90 it advances alarms
-without loss of sensitivity. Under a protocol-based evaluation with independent events, matched alarm
+and by the onset date it has detected more onsets than SPI-90. Combined with SPI-90 it detects more
+onsets in the first two months without loss of sensitivity. Under a protocol-based evaluation with independent events, matched alarm
 budgets and dependence-aware inference, daily SPI detects more onsets than the defect alone and a 30-day
 SPI reproduces most of its speed; these findings were stable under one-to-one event matching,
-alternative scoring windows and forward-chaining validation. Whether the regularisation improves
+alternative scoring windows, a fixed-reference event definition and forward-chaining validation. Whether
+the regularisation improves
 monitoring could not be resolved at the precision of this study, and the temperature-aware form improves
 forecasts but needs further development as a monitor. Learned monitoring statistics should be evaluated
 against a random-timing reference, indices of matching time scale and their own ablations before
@@ -767,7 +798,11 @@ descriptive and post hoc. Amendment~2, written after all the analyses above were
 post hoc robustness checks: the one-to-one matching rule, the alternative scoring windows, the
 random-timing reference, the multi-year block bootstrap, the dry-side calibration of SPI-3 and the
 forward-chaining and gap-purged validation schemes. None of them changes a threshold or replaces a
-pre-specified result. The protocol was not lodged with an external registry; it is reproduced in full,
+pre-specified result. Amendment~3 records three further post hoc checks (detection by deadline, reference
+events with the percentile climatology fixed to 1981--2000, and forecast equivalence under year-cluster
+resampling) and one correction: the threshold of the monthly SPI-3 rule is restricted to the dry side in
+the tables of the main paper, with the pre-specified calibration reported in Online Resource 1. The
+protocol was not lodged with an external registry; it is reproduced in full,
 with its deviation log, in Online Resource 1, Section~\ref{S-sec:protocol}.
 \end{appendices}
 

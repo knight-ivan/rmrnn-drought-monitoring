@@ -16,9 +16,10 @@ TEX = os.path.join(ROOT, "tex")
 MAIN, SUPP, COVER = "RM_Precipitation_SERRA", "RM_Precipitation_SERRA_supplement", "Cover_Letter_SERRA"
 OR2_ROOT = "rmrnn-drought-monitoring"
 OR2_INCLUDE = ["README.md", "PROTOCOL.md", "LICENSE", "requirements.txt", "reproduce.sh", "make_submission.py",
-               ".gitignore", "code", "results", "figures", "logs", "tex"]
-OR2_SKIP = re.compile(r"(__pycache__|\.DS_Store|\.npz$|/scores(_mv)?/|\.aux$|/tex/[^/]*\.log$|\.out$|\.blg$|"
-                      r"\.out\.txt$|_draft\.tex$|\.synctex\.gz$|\.pyc$)")
+               ".gitignore", "code", "results", "figures", "logs", "tex", "data"]
+OR2_SKIP = re.compile(r"(__pycache__|\.DS_Store|/panel(_mv)?/[^/]*\.npz$|/scores(_mv)?/|\.aux$|/tex/[^/]*\.log$|\.out$|"
+                      r"\.blg$|\.out\.txt$|_draft\.tex$|\.synctex\.gz$|\.pyc$|"
+                      r"daily_precip_long\.csv$|temperature_long\.csv$|/power/|/era5land/|/data/ghcnd/|/data/taiwan_raingel/)")
 
 
 def run(cmd, cwd):
@@ -120,9 +121,18 @@ def online_resource_2(dst_zip):
             "code/serra/evaluate_warning.py", "code/experiments_original/run_section5.py",
             "results/warning/summary.csv", "results/warning/matching_summary.csv",
             "results/covariates/incremental_forward.csv", "results/panel/texas_events.csv",
-            "logs/train_3regions.log"]
+            "logs/train_3regions.log", "data/texas/station_meta.csv", "data/texas/temperature_meta.csv",
+            "results/checks/intermediates.npz", "results/checks/data_table.csv", "code/serra/verify_from_csv.py"]
     assert all(n in files for n in need), [n for n in need if n not in files]
-    print(f"  Online Resource 2: {len(files)} files, {os.path.getsize(dst_zip) / 1e6:.1f} MB")
+    # the archive must verify itself: unzip into an empty folder and rebuild all tables from the result files
+    tmp = tempfile.mkdtemp()
+    with zipfile.ZipFile(dst_zip) as z:
+        z.extractall(tmp)
+    out = run([sys.executable, os.path.join(tmp, OR2_ROOT, "code", "serra", "verify_from_csv.py")], tmp)
+    assert out.startswith("OK"), out
+    shutil.rmtree(tmp)
+    print(f"  Online Resource 2: {len(files)} files, {os.path.getsize(dst_zip) / 1e6:.1f} MB; "
+          "unzipped copy rebuilds all tables and numbers from its own result files")
 
 
 def abstract_words():

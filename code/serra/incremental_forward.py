@@ -26,8 +26,12 @@ networks and all reference distributions are fitted on 1961-1990.
 Intervals: region-year cluster bootstrap (1000 resamples) of the out-of-sample
 predictions, as in covariate_analysis.py.
 
-Output: results/covariates[_mv]/incremental_forward.csv
-Usage:  python3 code/serra/incremental_forward.py [--mv]
+With --fixedref (Amendment 3) the labels come from reference events whose soil-wetness
+percentiles use 1981-2000 only (review_checks.py), so that neither the model nor the label
+of a training week depends on later years; only the forward scheme is run.
+
+Output: results/covariates[_mv]/incremental_forward.csv (incremental_forward_fixedref.csv)
+Usage:  python3 code/serra/incremental_forward.py [--mv] [--fixedref]
 """
 import os, sys
 import numpy as np
@@ -40,6 +44,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import ROOT, DATES, REGIONS, EVAL
 
 MV = "--mv" in sys.argv
+FIXEDREF = "--fixedref" in sys.argv      # labels from events with a 1981-2000 percentile reference
+EVSUF = "_events_ref1981_2000.csv" if FIXEDREF else "_events.csv"
 HORIZON = GAP = 60
 NBOOT = 1000
 PAN = os.path.join(ROOT, "results", "panel_mv" if MV else "panel")
@@ -64,7 +70,7 @@ YEAR_START = {y: int(np.searchsorted(DATES, pd.Timestamp(f"{y}-01-01"))) for y i
 def weekly(r):
     """Weekly design matrix of one region (identical to covariate_analysis*.py, plus the day index t)."""
     pn = np.load(os.path.join(PAN, f"{r}.npz"))
-    ev = pd.read_csv(os.path.join(PAN, f"{r}_events.csv"), dtype={"station_id": str})
+    ev = pd.read_csv(os.path.join(PAN, f"{r}{EVSUF}"), dtype={"station_id": str})
     t = np.arange(T0, len(DATES) - HORIZON, 7)
     rows = []
     for i, s in enumerate(pn["station_id"]):
@@ -138,6 +144,14 @@ def main():
     D = {r: weekly(r) for r in REGIONS}
     D["all"] = pd.concat([D[r] for r in REGIONS], ignore_index=True)
     res = []
+    if FIXEDREF:      # forward chaining only, with labels that never use later years
+        rng = np.random.default_rng(SEED + 2000)
+        for g in REGIONS + ["all"]:
+            res += evaluate(D[g], predictions(D[g], "forward"), (D[g].year >= EVAL[0]).values, rng,
+                            "forward", "2001-2024", g)
+            print(g, "forward chaining, fixed-reference events, done", flush=True)
+        pd.DataFrame(res).to_csv(os.path.join(OUT, "incremental_forward_fixedref.csv"), index=False)
+        return
     # pass 1: pre-specified scheme on 1982-2024, same random stream as covariate_analysis*.py
     rng = np.random.default_rng(SEED); PR = {}
     for g in REGIONS + ["all"]:

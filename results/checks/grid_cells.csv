@@ -1,0 +1,6 @@
+region,stations,cells,max_stations_per_cell,stations_sharing_a_cell
+texas,40,32,3,14
+germany,40,40,1,0
+australia,40,40,1,0
+taiwan,13,9,2,8
+all,133,121,3,22

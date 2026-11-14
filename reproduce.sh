@@ -1,9 +1,18 @@
 #!/bin/sh
 # Exact command sequence for the paper (see README.md). Run from the repository root.
-# Steps 1-3 need network access and about 2 h on 16 cores; steps 4-5 run from the stored
-# score panels (results/panel*/) in about 40 minutes on two cores.
+#   sh reproduce.sh            verify: rebuild every table and number from results/ and compare
+#                              with the published ones (needs nothing outside this archive)
+#   sh reproduce.sh tables     also redraw the figures and recompile the PDFs
+#                              (figures need the score panels results/panel*/*.npz)
+#   sh reproduce.sh posthoc    re-run the post hoc checks first (needs the score panels; ~1 h on 2 cores)
+#   sh reproduce.sh all        everything from the raw downloads (network; ~2 h on 16 cores)
 set -e
-STAGE="${1:-posthoc}"          # all | posthoc | tables
+STAGE="${1:-verify}"
+
+if [ "$STAGE" = "verify" ]; then
+  python3 code/serra/verify_from_csv.py
+  exit 0
+fi
 
 if [ "$STAGE" = "all" ]; then
   # 1. data
@@ -30,6 +39,10 @@ if [ "$STAGE" = "all" ] || [ "$STAGE" = "posthoc" ]; then
   # 4. post hoc robustness checks (Amendment 2)
   python3 code/serra/matching_checks.py && python3 code/serra/matching_checks.py --mv
   python3 code/serra/incremental_forward.py && python3 code/serra/incremental_forward.py --mv
+  # further post hoc checks (Amendment 3)
+  [ -d results/scores ] && python3 code/serra/extract_intermediates.py
+  python3 code/serra/review_checks.py && python3 code/serra/review_checks.py --mv
+  python3 code/serra/incremental_forward.py --fixedref && python3 code/serra/incremental_forward.py --mv --fixedref
 fi
 
 # 5. tables, numbers, figures, PDFs

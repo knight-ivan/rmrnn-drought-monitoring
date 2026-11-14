@@ -1,0 +1,30 @@
+\begin{table}[tbp]
+\caption{Forecast equivalence under two resampling units (post hoc): 90\% intervals for the mean relative
+difference in MSE (\%) between the regularised network and its $\lambda=0$ ablation or the GRU. Station:
+$t$ interval over stations, as in the main paper. Year cluster: percentile interval from resampling the 24
+calendar years within each region (2000 replicates), which keeps the dependence among stations that share
+weather. An interval inside $\pm2\%$ establishes equivalence.}
+\label{tab:forecastcluster}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lrcccc}
+\toprule
+& & \multicolumn{2}{c}{vs $\lambda=0$} & \multicolumn{2}{c}{vs GRU}\\
+\cmidrule{3-4}\cmidrule{5-6}
+Region & $n$ & Station & Year cluster & Station & Year cluster\\
+\midrule
+\multicolumn{6}{l}{\textit{Precipitation-only networks}}\\
+\quad Central Texas & 40 & [$-$0.22, $-$0.05] & [$-$0.18, $-$0.09] & [$-$0.28, $-$0.02] & [$-$0.19, $-$0.11] \\
+\quad Germany & 40 & [$-$0.09, $-$0.02] & [$-$0.07, $-$0.04] & [$-$0.04, +0.09] & [$-$0.00, +0.05] \\
+\quad SE Australia & 40 & [$-$0.11, +0.02] & [$-$0.07, $-$0.02] & [$-$0.07, +0.08] & [$-$0.03, +0.04] \\
+\quad Taiwan & 13 & [$-$0.06, +0.02] & [$-$0.04, $-$0.00] & [+0.07, +0.43] & [+0.17, +0.32] \\
+\quad All regions & 133 & [$-$0.11, $-$0.04] & [$-$0.09, $-$0.06] & [$-$0.06, +0.04] & [$-$0.03, +0.01] \\
+\midrule
+\multicolumn{6}{l}{\textit{Temperature-aware networks}}\\
+\quad Central Texas & 40 & [$-$0.07, +0.03] & [$-$0.04, $-$0.00] & [$-$0.03, +0.23] & [$-$0.02, +0.21] \\
+\quad Germany & 40 & [+0.02, +0.08] & [+0.02, +0.08] & [+0.22, +0.33] & [+0.19, +0.36] \\
+\quad SE Australia & 27 & [+0.27, +0.54] & [+0.33, +0.47] & [+1.49, +2.19] & [+1.63, +2.05] \\
+\quad Taiwan & 13 & [$-$0.11, +0.14] & [$-$0.03, +0.06] & [+0.24, +0.77] & [+0.38, +0.64] \\
+\quad All regions & 120 & [+0.06, +0.15] & [+0.08, +0.12] & [+0.45, +0.73] & [+0.52, +0.66] \\
+\botrule
+\end{tabular*}
+\end{table}

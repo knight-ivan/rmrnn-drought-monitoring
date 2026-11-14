@@ -6,13 +6,21 @@ drought onset? A pre-specified event-based evaluation of backward-coherence regu
 Repository: https://github.com/knight-ivan/rmrnn-drought-monitoring (private until acceptance).
 This folder is also what is submitted to the journal as Online Resource 2.
 
-Revision of 2026-11-13 (after a pre-submission review of the 2026-11-12 package): post hoc
-robustness checks added (PROTOCOL.md, Amendment 2), wording revised, figures redrawn. No
-pre-specified result was changed.
+Revisions of 2026-11-13 and 2026-11-14 (after two pre-submission reviews of the 2026-11-12
+package): post hoc robustness checks added (PROTOCOL.md, Amendments 2 and 3), wording revised,
+figures redrawn. No pre-specified result was changed; the monthly SPI-3 comparator is shown with a
+corrected (dry-side) calibration in the main tables and with the pre-specified one in the supplement.
+
+## Quick check (needs nothing outside this archive)
+```
+sh reproduce.sh          # = python3 code/serra/verify_from_csv.py
+```
+rebuilds every table and every number quoted in the paper from `results/` and compares them
+with the published ones in `tex/tables/`.
 
 ## Files
 - `PROTOCOL.md` — analysis plan written before training, its deviation log, Amendment 1
-  (temperature-aware extension) and Amendment 2 (post hoc robustness checks). The protocol is a
+  (temperature-aware extension) and Amendments 2 and 3 (post hoc checks and one correction). The protocol is a
   dated file kept with the code; it was not lodged with an external registry.
 - `code/serra/` — the analysis scripts of the paper. `code/common/` and
   `code/experiments_original/` — the original exploratory scripts, kept unchanged for the record
@@ -47,6 +55,10 @@ python3 code/serra/covariate_analysis_mv.py && python3 code/serra/drift_mv.py
 # 4. post hoc robustness checks (Amendment 2); need only results/panel*/
 python3 code/serra/matching_checks.py && python3 code/serra/matching_checks.py --mv
 python3 code/serra/incremental_forward.py && python3 code/serra/incremental_forward.py --mv
+# 4b. further post hoc checks (Amendment 3); extract_intermediates.py needs results/scores*/ and data/*/power/
+python3 code/serra/extract_intermediates.py
+python3 code/serra/review_checks.py && python3 code/serra/review_checks.py --mv
+python3 code/serra/incremental_forward.py --fixedref && python3 code/serra/incremental_forward.py --mv --fixedref
 # 5. tables, numbers, figures, PDFs
 python3 code/serra/text_checks.py && python3 code/serra/make_tables.py
 python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv
@@ -61,9 +73,10 @@ about 200 MB) without any retraining; step 4 takes about 40 minutes on two cores
 - Training (`train_models*.py`): seed = 1000*k + s for seed index k = 0..4, where s is the
   integer formed by the last four characters of the station id (0 if they are not digits);
   `torch.manual_seed(seed)` and `numpy.random.default_rng(seed)`.
-- Bootstrap: 20261112 (`evaluate_warning.py`, `matching_checks.py`; +1 for block resampling,
-  +2 for the random-timing shifts), 7 (`covariate_analysis.py`), 11 (`covariate_analysis_mv.py`),
-  1007 / 1011 (`incremental_forward.py`, second pass), 5 (`drift_mv.py`).
+- Bootstrap: 20261112 (`evaluate_warning.py`, `matching_checks.py`, `review_checks.py`; +1 for
+  block resampling, +2 and +3 for the random-timing shifts, +4 for the forecast intervals),
+  7 (`covariate_analysis.py`), 11 (`covariate_analysis_mv.py`), 1007 / 1011 (`incremental_forward.py`,
+  second pass; 2007 / 2011 with `--fixedref`), 5 (`drift_mv.py`).
 
 ## Software
 - Original runs: Python 3.12 with the packages in `requirements.txt`.
@@ -101,9 +114,15 @@ From the stored score panels, in the second environment above:
   and forward-chaining validation leave these conclusions unchanged. The deficit to SPI-90 is
   larger when alarms before the onset are not credited (−0.194 at [0, +120]).
 - Monthly SPI-3 (D4): the pre-specified grid search met the budget with a positive (wet-side)
-  threshold in Germany and Australia; those entries are not informative about the index. With a
-  dry-side threshold SPI-3 detects 0.767 of onsets pooled (defect minus SPI-3: −0.102
-  [−0.139, −0.061]).
+  threshold in Germany and Australia. The main tables use the dry-side calibration (post hoc
+  correction): SPI-3 detects 0.767 of onsets pooled (defect minus SPI-3: −0.102 [−0.139, −0.061]);
+  the pre-specified calibration (0.510) is in the supplement.
+- Detection by deadline (Amendment 3; counts every onset): by the onset date the defect has
+  detected 0.257 of onsets against 0.194 for SPI-90 (+0.063 [+0.013, +0.119]); SPI-90 overtakes
+  it after day 41. The D1+D3 combination is ahead of SPI-90 at 30 and 60 days.
+- Fixed-reference events (percentiles from 1981–2000 only; 1,800 onsets): defect 0.655, SPI-90
+  0.718 (−0.063 [−0.097, −0.028]); regularised minus unregularised +0.001 [−0.016, +0.017].
+- Forecast equivalence holds with year-cluster intervals as well.
 
 ## Changes from the earlier exploratory work (all disclosed in the paper)
 - Turkey dropped (no gauge has a 30-year reference period); SE Australia (Murray–Darling) added.
@@ -111,6 +130,11 @@ From the stored score panels, in the second environment above:
 - Reference events come from MERRA-2 root-zone soil moisture (NASA POWER), not ERA5-Land,
   because of download rate limits.
 - PyTorch re-implementation of the Elman network with early stopping; 5 seeds per station.
+
+## What is in this archive beyond code and tables
+Station lists (`data/<region>/station_meta.csv`, `temperature_meta.csv`), the reference events
+(`results/panel*/<region>_events*.csv`), `results/checks/intermediates.npz` (raw MERRA-2 root-zone
+soil wetness per station and station-year forecast errors) and the Natural Earth outlines.
 
 ## What is NOT in this archive (rebuilt by the scripts)
 Raw GHCN `.dly` files, Raingel daily files, long-format daily inputs, MERRA-2 extracts,

@@ -35,7 +35,9 @@ Outputs (results/warning[_mv]/):
   matching_paired.csv    paired dPOD, dFAR and timing differences per rule x window
   matching_chance.csv    POD of randomly timed alarms (same number and spacing) per window
   episodes.csv           regional episodes of station-level onsets
-  spi3_dryside.csv       D4 with its threshold restricted to c <= 0 (not with --mv)
+  spi3_dryside.csv       D4 with its threshold restricted to c <= 0 (not with --mv):
+                         calibration, POD, FAR, timing, random-timing reference, paired D1 - D4
+  spi3_dryside_events.csv  its per-event rows at the primary budget
   blockboot.csv          interval widths under multi-year block resampling
 
 Usage: python3 code/serra/matching_checks.py [--mv]
@@ -256,8 +258,26 @@ def spi3_dryside(EV, W):
                 AL2[(r, "D1", s)] = np.flatnonzero(EW.alarms("D1", Z1[i], t1) & EVM)
         V, EVT, _ = score_all(AL2, EV, 60, 120, "prespecified")
         S, P = summarise(V, EVT, W, dets=["D1", "D4"], pairs=[("D1", "D4")])
-        o = S[S.det == "D4"].merge(P[["group", "dpod", "dpod_lo", "dpod_hi", "dfar", "dfar_lo", "dfar_hi"]], on="group")
-        out.append(o.merge(pd.DataFrame(cal), on="group", how="left").assign(budget=budget))
+        o = S[S.det == "D4"].merge(P.drop(columns="comp"), on="group")
+        o = o.merge(pd.DataFrame(cal), on="group", how="left").assign(budget=budget)
+        if budget == EW.BUDGETS[0]:      # primary budget: random-timing reference and event rows
+            rng = np.random.default_rng(SEED + 3)
+            ev_idx = np.flatnonzero(EVM); a0, n = int(ev_idx[0]), len(ev_idx)
+            hits = {r: np.zeros(NSHIFT) for r in REGIONS}; nev = {r: 0 for r in REGIONS}
+            for (r, det, s), al in AL2.items():
+                if det != "D4":
+                    continue
+                on = EV[(r, s)][:, 0]; on = on[EVM[on]]; nev[r] += len(on)
+                for k, off in enumerate(rng.integers(1, n, NSHIFT)):
+                    sh = np.sort(a0 + (al - a0 + off) % n)
+                    hits[r][k] += (np.searchsorted(sh, on + 120, "right") > np.searchsorted(sh, on - 60, "left")).sum()
+            ch = {r: hits[r] / nev[r] for r in REGIONS}
+            ch["all"] = sum(hits.values()) / sum(nev.values())
+            o["pod_chance"] = o.group.map(lambda g: float(ch[g].mean()))
+            o["chance_lo"] = o.group.map(lambda g: float(np.percentile(ch[g], 2.5)))
+            o["chance_hi"] = o.group.map(lambda g: float(np.percentile(ch[g], 97.5)))
+            EVT[EVT.det == "D4"].to_csv(os.path.join(EW.OUT, "spi3_dryside_events.csv"), index=False)
+        out.append(o)
     return pd.concat(out, ignore_index=True)
 
 
