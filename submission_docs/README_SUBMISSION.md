@@ -1,15 +1,16 @@
-# SERRA submission package — 14 November 2026 (revised after three pre-submission reviews)
+# SERRA submission package — 26 November 2026 (revised after three pre-submission reviews)
 
 **Journal:** *Stochastic Environmental Research and Risk Assessment* (Springer Nature, Editorial Manager)
 **Article type:** Research Article (Original Paper)
 **Title:** Can the hidden state of a recurrent precipitation model monitor drought onset? A
-pre-specified event-based evaluation of backward-coherence regularisation
+planned event-based evaluation of backward-coherence regularization
 **Authors:** Hui-Mean Foo (ORCID 0000-0003-4200-5849); Yuan-chin Ivan Chang* (corresponding,
 ORCID 0000-0002-4977-7721), Institute of Statistical Science, Academia Sinica, Taipei 11529, Taiwan
 
-This folder is built by `python3 make_submission.py SUBMISSION_SERRA_2026_1114` from the master files
-one level up (git repository knight-ivan/rmrnn-drought-monitoring, tag `serra-submission-2026-11-14`).
-Edit there, not here. It replaces the packages of 12 and 13 November.
+This folder is built by `python3 make_submission.py SUBMISSION_SERRA_2026_1126` from the master files
+one level up (git repository knight-ivan/rmrnn-drought-monitoring, tag `serra-submission-2026-11-26`).
+Edit there, not here. It replaces the packages of 12, 13 and 14 November; the title now reads "A planned
+event-based evaluation", and the paper uses US spelling throughout.
 `../submission_docs/REVISION_NOTES.md` lists what changed and why; `../submission_docs/Email_to_Foo.txt`
 is the note to the co-author.
 
@@ -51,7 +52,7 @@ index; recurrent neural networks; event-based verification
 
 **Author contributions (CRediT):**
 - Hui-Mean Foo: data curation, formal analysis, validation, writing (review and editing).
-- Yuan-chin Ivan Chang: conceptualisation, methodology, software, formal analysis, writing (original draft).
+- Yuan-chin Ivan Chang: conceptualization, methodology, software, formal analysis, writing (original draft).
 
 **Data availability:** All data are public: GHCN-Daily (doi:10.7289/V5D21VHZ), the Raingel archive of
 Central Weather Administration records, and MERRA-2 through NASA POWER. Station lists, reference
@@ -67,7 +68,7 @@ https://github.com/knight-ivan/rmrnn-drought-monitoring (private; made public on
 ## Author to-do before clicking Submit
 - [ ] Read `../submission_docs/REVISION_NOTES.md`, in particular "Statements made on your behalf".
 - [ ] Co-author (Foo) has read and approved the final PDFs, including the CRediT roles.
-- [ ] Push the repository (`git push origin main serra-submission-2026-11-13 serra-submission-2026-11-14`).
+- [ ] Push the repository (`git push origin main --tags`).
 - [ ] In the environment that trained the models, run `pip freeze > requirements-lock.txt` and add it
       to the repository, so that the exact package versions are on record.
 - [ ] Decide where the score panels (`results/panel*/*.npz`, 200 MB) will be deposited (for example
@@ -83,5 +84,5 @@ https://github.com/knight-ivan/rmrnn-drought-monitoring (private; made public on
 sh reproduce.sh                            # check tables and numbers against results/
 python3 code/serra/make_tables.py          # tables and numbers from results/
 python3 code/serra/figures.py && python3 code/serra/figures.py composite_mv   # needs the score panels
-python3 make_submission.py SUBMISSION_SERRA_2026_1114
+python3 make_submission.py SUBMISSION_SERRA_2026_1126
 ```

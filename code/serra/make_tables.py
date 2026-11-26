@@ -94,7 +94,7 @@ def forecast_table():
     P = pd.read_csv(os.path.join(ROOT, "results", "forecast", "paired.csv"))
     lines, plines = [], []
     for g in REGIONS + ["all"]:
-        for j, (mod, lab) in enumerate([("rmrnn", "Regularised"), ("lam0", r"$\lambda=0$"), ("gru", "GRU")]):
+        for j, (mod, lab) in enumerate([("rmrnn", "Regularized"), ("lam0", r"$\lambda=0$"), ("gru", "GRU")]):
             s = S[(S.region == g) & (S.model == mod)].iloc[0]
             lines.append(f"{RN[g] if j == 0 else ''} & {lab} & {s.mse_mean:.3f} & {s.msss_mean:.3f} & {s.mae_mean:.3f} & {s.auc_mean:.3f} & {s.qpath_mean:.1f} \\\\")
         if g != "all":
@@ -114,7 +114,7 @@ def forecast_table():
     mac("msssmin", f"{ms[ms.region != 'all'].msss_mean.min():.3f}"); mac("msssmax", f"{ms[ms.region != 'all'].msss_mean.max():.3f}")
     tex = r"""\begin{table}[tbp]
 \caption{Next-day forecast accuracy on 2001--2024 (station means over five seeds, then averaged
-over stations). MSE and MAE refer to standardised $\log(1+P)$; MSESS is the MSE skill score relative
+over stations). MSE and MAE refer to standardized $\log(1+P)$; MSESS is the MSE skill score relative
 to day-of-year climatology; AUC is for exceeding the station's 1961--1990 95th percentile;
 $Q_{\mathrm{path}}$ is the mean hidden-state path increment over a 30-day window.}
 \label{tab:forecast}
@@ -129,7 +129,7 @@ Region & Model & MSE & MSESS & MAE & AUC & $Q_{\mathrm{path}}$\\
 \end{table}
 
 \begin{table}[tbp]
-\caption{Paired station-level comparisons of the regularised network. MSE differences are mean relative differences (\%)
+\caption{Paired station-level comparisons of the regularized network. MSE differences are mean relative differences (\%)
 with 90\% confidence intervals, which coincide with the TOST equivalence test at level 0.05: an interval
 inside $\pm2\%$ establishes equivalence. $Q_{\mathrm{path}}$: median relative change (\%) against the
 $\lambda=0$ ablation with its Wilcoxon signed-rank $p$-value.}
@@ -193,7 +193,7 @@ def warning_table(budget=1.0, fname="warning.tex", label="tab:warning", dets=("D
     extra = (r"""; timing: median of
 (alarm $-$ onset) among hits, negative values meaning lead; random: POD of the same alarms after random
 circular shifts within 2001--2024 (post hoc reference, Section~\ref{sec:scoring}); D1 ($\lambda>0$) is the
-regularised defect and D2 ($\lambda=0$) its ablation""" if prim else "")
+regularized defect and D2 ($\lambda=0$) its ablation""" if prim else "")
     hdr = (r"Detector & POD & Random & FAR (per yr) & Timing (d)\\" if prim
            else r"Detector & POD & FAR (per yr)\\")
     tex = r"""\begin{table}[tbp]
@@ -288,7 +288,7 @@ def covariate_tables():
         lines.append(f"{RN[g]} & " + " & ".join(cells) + " \\\\")
     tex = r"""\begin{table}[tbp]
 \caption{Monthly association (1981--2024) between the defect anomaly and concurrent
-hydrometeorological anomalies: standardised coefficients from regressions with station fixed effects;
+hydrometeorological anomalies: standardized coefficients from regressions with station fixed effects;
 $^{\ast}p<0.05$ with standard errors clustered by year-month; $R^2_w$ is the within-station $R^2$.}
 \label{tab:assoc}
 \footnotesize\setlength{\tabcolsep}{4pt}
@@ -562,7 +562,7 @@ Region & SPI-3 & SM & T2m & ET & $R^2_w$ & SPI-3 & SM & T2m & ET & $R^2_w$\\
             if r != REGIONS[-1]:
                 lines.append(r"\midrule")
         tex = r"""\begin{table}[h]
-\caption{Descriptive (post hoc) drift check: mean standardised anomaly relative to the 1961--1990
+\caption{Descriptive (post hoc) drift check: mean standardized anomaly relative to the 1961--1990
 reference, averaged over stations, in 1991--2000 and 2001--2024 (95\% year-bootstrap interval).
 Temperature anomalies are relative to 1981--2010 (MERRA-2).}\label{tab:drift}
 \footnotesize\setlength{\tabcolsep}{4pt}
@@ -593,7 +593,7 @@ Region & Score & 1991--2000 & 2001--2024\\
                 mac("mvmsegrulo", f"{100*p1.ci90_lo:+.2f}"); mac("mvmsegruhi", f"{100*p1.ci90_hi:+.2f}")
                 mac("mvmsss", f"{s0.msss_mean:.3f}")
         tex = r"""\begin{table}[tbp]
-\caption{Temperature-aware networks: next-day precipitation forecasts on 2001--2024 (MSESS of the regularised network;
+\caption{Temperature-aware networks: next-day precipitation forecasts on 2001--2024 (MSESS of the regularized network;
 paired relative MSE differences with 90\% CIs; median change in $Q_{\mathrm{path}}$ against the
 $\lambda=0$ ablation).}
 \label{tab:forecastmv}
@@ -780,7 +780,7 @@ used in the tables of the main paper (post hoc correction). The alarm count of a
 rule is not monotone in $c$, and the pre-specified grid search can meet a budget with a positive
 threshold, which makes the rule alarm on returns from wet conditions. Columns: threshold $c$ (with the
 calibration rate attained in 1991--2000 for the dry side); POD and FAR on 2001--2024 under the
-pre-specified scoring rule; $\Delta$POD: regularised defect (D1) minus SPI-3 at the same budget. Where
+pre-specified scoring rule; $\Delta$POD: regularized defect (D1) minus SPI-3 at the same budget. Where
 the pre-specified threshold is already negative the two calibrations coincide. Brackets: 95\%
 year-cluster bootstrap intervals. $^{\ast}$Budget not attained within 10\%.}
 \label{tab:spithree}
@@ -1002,7 +1002,7 @@ Comparison & $d=0$ & $+30$ & $+60$\\
     dd = d[(d.comp == "D6-D3") & (d.deadline >= 0)]
     assert (dd.hi > 0).all()                          # text: combination never detectably behind SPI-90 after onset
     dd = d[(d.comp == "D1-D2")]
-    assert ((dd.lo <= 0) & (dd.hi >= 0)).mean() > 0.9  # text: regularised vs ablation, no detectable difference at almost any deadline
+    assert ((dd.lo <= 0) & (dd.hi >= 0)).mean() > 0.9  # text: regularized vs ablation, no detectable difference at almost any deadline
     mac("dlcrossDoneDthree", f"{x.loc['D1-D3'].first_ahead_until:.0f}"); mac("dlcrossDoneDseven", f"{x.loc['D1-D7'].first_ahead_until:.0f}")
     am = L["mv"][L["mv"].group == "all"]
     mac("dlmvDeightzero", f"{float(am[(am.det == 'D8') & (am.deadline == 0)].frac.iloc[0]):.3f}")
@@ -1113,7 +1113,7 @@ bootstrap intervals. $^{\ddagger}$Dry-side calibration. ``base'' = SPEI-90 + SPE
             assert list(bad.group) == ["australia"] and list(bad.comp) == ["rmrnn-gru"]
     tex = r"""\begin{table}[tbp]
 \caption{Forecast equivalence under two resampling units (post hoc): 90\% intervals for the mean relative
-difference in MSE (\%) between the regularised network and its $\lambda=0$ ablation or the GRU. Station:
+difference in MSE (\%) between the regularized network and its $\lambda=0$ ablation or the GRU. Station:
 $t$ interval over stations, as in the main paper. Year cluster: percentile interval from resampling the 24
 calendar years within each region (2000 replicates), which keeps the dependence among stations that share
 weather. An interval inside $\pm2\%$ establishes equivalence.}

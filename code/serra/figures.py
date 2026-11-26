@@ -113,7 +113,7 @@ def fig_composite():
         ax.axvline(0, color="k", lw=0.6); ax.axhline(0, color="k", lw=0.4)
         ax.set_title(f"{NAMES[r]} ({len(acc['D1'])} of {len(ev)} onsets)")
         ax.set_xticks([-180, -90, 0, 90, 180]); ax.grid(alpha=0.3, lw=0.4)
-    _finish22(fig, axs, "Days from soil-moisture onset", "Mean standardised anomaly", 3, 0.11, "event_composites.pdf")
+    _finish22(fig, axs, "Days from soil-moisture onset", "Mean standardized anomaly", 3, 0.11, "event_composites.pdf")
 
 
 def fig_traces(cases):
@@ -172,7 +172,7 @@ def fig_association():
             ax.errorbar(a.coef, yy, xerr=[a.coef - a.lo, a.hi - a.coef], fmt="o", ms=3,
                         label=NAMES.get(g, "All regions"), color=plt.cm.tab10(j) if g != "all" else "k")
         ax.axvline(0, color="k", lw=0.5); ax.set_yticks(range(len(terms))); ax.set_yticklabels(tl)
-        ax.set_title(DLAB[y], fontsize=9); ax.set_xlabel("Standardised coefficient (95% CI)")
+        ax.set_title(DLAB[y], fontsize=9); ax.set_xlabel("Standardized coefficient (95% CI)")
     axs[1].legend(frameon=False, fontsize=7)
     fig.savefig(os.path.join(FIG, "association.pdf"))
 
@@ -203,7 +203,7 @@ def fig_composite_mv():
         ax.axvline(0, color="k", lw=0.6); ax.axhline(0, color="k", lw=0.4)
         ax.set_title(f"{NAMES[r]} ({len(acc['D1'])} of {len(ev)} onsets)")
         ax.set_xticks([-180, -90, 0, 90, 180]); ax.grid(alpha=0.3, lw=0.4)
-    _finish22(fig, axs, "Days from soil-moisture onset", "Mean standardised anomaly", 2, 0.15, "event_composites_mv.pdf")
+    _finish22(fig, axs, "Days from soil-moisture onset", "Mean standardized anomaly", 2, 0.15, "event_composites_mv.pdf")
 
 
 def fig_deadline():

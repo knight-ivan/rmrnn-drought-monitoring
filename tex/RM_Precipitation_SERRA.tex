@@ -25,8 +25,8 @@
 \linenumbers
 
 \title[Hidden-state drought monitoring with recurrent precipitation models]{Can the hidden state of a
-recurrent precipitation model monitor drought onset? A pre-specified event-based evaluation of
-backward-coherence regularisation}
+recurrent precipitation model monitor drought onset? A planned event-based evaluation of
+backward-coherence regularization}
 
 \author[1]{\fnm{Hui-Mean} \sur{Foo}\,\orcidtext{0000-0003-4200-5849}}\email{huimean87@gmail.com}
 \author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}\,\orcidtext{0000-0002-4977-7721}}\email{ycchang@as.edu.tw}
@@ -35,7 +35,7 @@ backward-coherence regularisation}
 
 \abstract{\mathversion{normal}Hidden states of recurrent precipitation models are attractive
 drought-monitoring statistics but are rarely tested against standard indices under operational
-controls. We propose backward-coherence regularisation, a penalty inspired by
+controls. We propose backward-coherence regularization, a penalty inspired by
 reverse-martingale theory that makes each hidden state reconstructable from its successor, monitor its
 reconstruction error (the \emph{defect}) by CUSUM, and evaluate it in a controlled framework.
 Following a written protocol, daily gauge records (1961--2024) from \nstall\ stations in Texas,
@@ -60,12 +60,12 @@ recurrent neural networks, event-based verification}
 
 % ======================================================================
 \section{Introduction}\label{sec:intro}
-Drought monitoring rests on standardised indices of accumulated precipitation, above all the
+Drought monitoring rests on standardized indices of accumulated precipitation, above all the
 Standardized Precipitation Index (SPI) and its temperature-aware counterpart SPEI
-\citep{mckee1993,wmo2012,vicenteserrano2010,mishra2010,hao2017}. Each summarises the record through one
+\citep{mckee1993,wmo2012,vicenteserrano2010,mishra2010,hao2017}. Each summarizes the record through one
 moving sum and responds only once a deficit has accumulated. Recurrent neural networks
 \citep{hochreiter1997} are increasingly used for hydrometeorological series \citep{kratzert2019}, and
-their hidden state summarises recent inputs in a learned, nonlinear way. Monitoring the residuals or
+their hidden state summarizes recent inputs in a learned, nonlinear way. Monitoring the residuals or
 latent states of learned models is common in anomaly detection \citep{hundman2018,gama2014}, but we are
 not aware of a test of whether such a state yields a calibrated drought monitor that carries
 information beyond standard indices, made with the controls that operational monitoring needs.
@@ -74,7 +74,7 @@ This paper proposes such a statistic and provides such a test. The method is a p
 reverse-martingale theory \citep{doob1953}, that asks each hidden state to be reconstructable from its
 successor, with the online reconstruction error (the \emph{defect}) monitored by a cumulative-sum (CUSUM)
 procedure \citep{page1954,lorden1971,moustakides1986,tartakovsky2014}. We call the penalty
-backward-coherence regularisation; it is a regulariser motivated by that theory, and we do not construct a
+backward-coherence regularization; it is a regularizer motivated by that theory, and we do not construct a
 reverse martingale or claim a theoretical guarantee for the trained network or for the detector
 (Section~\ref{sec:model}). The test is a controlled evaluation framework for learned monitoring
 statistics: detectors spend a matched alarm budget, events are defined from a variable that no detector
@@ -136,7 +136,7 @@ could not be fitted there. In Taiwan, 13 of 22 synoptic stations meet the comple
 Warning skill is scored against drought events defined from a quantity that no detector uses:
 root-zone soil wetness from the MERRA-2 reanalysis \citep{gelaro2017}, extracted at each gauge from the
 NASA POWER archive for 1981--2024. The reanalysis grid is $0.5^\circ\times0.625^\circ$, and the \nstall\
-stations fall in \ncellsall\ of its cells, so neighbouring stations can share reference information. For
+stations fall in \ncellsall\ of its cells, so neighboring stations can share reference information. For
 each station, soil wetness is converted to a day-of-year percentile, pooling a $\pm15$-day window over all
 years 1981--2024 (a reference fixed to 1981--2000 is examined in Section~\ref{sec:scoring}). Following run theory \citep{yevjevich1967}, an
 event is a run of at least 30 consecutive days below the 20th percentile; runs separated by fewer than
@@ -151,7 +151,7 @@ precipitation, and we return to this limitation in Section~\ref{sec:limits}.
 
 \subsection{Study periods}
 The networks and the reference distributions of the precipitation-based detectors (the SPI and SPEI
-fits and the day-of-year standardisation of the detector scores) are estimated on 1961--1990, the last
+fits and the day-of-year standardization of the detector scores) are estimated on 1961--1990, the last
 three years of which serve as an early-stopping validation set for the networks. Alarm thresholds are
 calibrated on 1991--2000. All warning and forecast results refer to 2001--2024, which no network fit,
 index fit or threshold calibration uses. The soil-moisture reference is separate from these periods:
@@ -171,7 +171,7 @@ MERRA-2 covariate anomalies of Section~\ref{sec:physical_methods} are relative t
  \node[box,right=of h] (f) {Next-day forecast\\$\hat y_{t+1}$};
  \node[box,below=of p] (s) {SPI-90, SPI-30,\\SPI-3 (gamma fits)};
  \node[box,below=of h] (g) {Backward projector\\$g_\phi(h_t)\approx h_{t-1}$};
- \node[box,right=of g] (d) {Defect $d_t$\\deseasonalised $z_t$};
+ \node[box,right=of g] (d) {Defect $d_t$\\deseasonalized $z_t$};
  \node[box,right=of d] (c) {Alarms at a\\matched budget};
  \node[box,below=14mm of d] (e) {Reference onsets\\(root-zone soil moisture)};
  \node[box,right=of e] (v) {Event scoring:\\POD, FAR, timing};
@@ -186,14 +186,14 @@ MERRA-2 covariate anomalies of Section~\ref{sec:physical_methods} are relative t
 separately; reference events come from a variable that no detector uses}\label{fig:workflow}
 \end{figure}
 
-\subsection{Backward-coherence regularised recurrent network}\label{sec:model}
-Let $x_t=(\tilde P_t,m_t)$, where $\tilde P_t$ is the standardised $\log(1+P_t)$ of daily precipitation
+\subsection{Backward-coherence regularized recurrent network}\label{sec:model}
+Let $x_t=(\tilde P_t,m_t)$, where $\tilde P_t$ is the standardized $\log(1+P_t)$ of daily precipitation
 $P_t$ and $m_t$ indicates a missing observation; a missing day is filled with its 1961--1990
 day-of-year climatology, so that missingness is never confused with zero rainfall. An Elman network with
 $d=32$ hidden units maps a 30-day window $x_{t-29:t}$ to states $h_{t-29},\dots,h_t$ and to the
 forecast $\hat y_{t+1}=w^\top h_t+b$ of $\tilde P_{t+1}$ (Fig.~\ref{fig:workflow}). A residual
 multilayer perceptron $g_\phi(h)=h+W_2\,\mathrm{ReLU}(W_1h+b_1)+b_2$ reconstructs each state from its
-successor, and the regularised objective over $n$ training windows is
+successor, and the regularized objective over $n$ training windows is
 \begin{equation}\label{eq:loss}
  \mathcal L(\theta,\phi)=\frac1n\sum_{t}\bigl(\hat y_{t+1}-\tilde P_{t+1}\bigr)^2
  +\frac{\lambda}{n}\sum_{t}\frac1{29}\sum_{s=t-29}^{t-1}\bigl\|h_s-g_\phi(h_{s+1})\bigr\|^2 .
@@ -203,11 +203,11 @@ Let $\mathcal G_s=\sigma(h_u:u\ge s)$ be the decreasing filtration generated by 
 state path. A process with $\mathbb E[h_s\mid\mathcal G_{s+1}]=h_{s+1}$ is a reverse martingale
 \citep{doob1953}. The projector $g_\phi(h_{s+1})$ is a one-step, first-order Markov surrogate for the
 backward conditional expectation $\mathbb E[h_s\mid h_{s+1}]$, and the penalty in \eqref{eq:loss} is
-its mean squared error. Minimising \eqref{eq:loss} does not make $(h_s)$ a reverse martingale; it makes
+its mean squared error. Minimizing \eqref{eq:loss} does not make $(h_s)$ a reverse martingale; it makes
 the representation approximately backward-predictable under the training climatology. The
 reverse-martingale property serves here only as motivation: we establish no property of the trained state
 path and derive no guarantee, for example on detection delay or false-alarm rate, for a detector built on
-it. We therefore call the penalty backward-coherence regularisation and assess it empirically. It
+it. We therefore call the penalty backward-coherence regularization and assess it empirically. It
 suggests the monitoring statistic
 \begin{equation}\label{eq:defect}
  d_t=\bigl\|h_{t-1}-g_\phi(h_t)\bigr\|,
@@ -216,19 +216,19 @@ available once day $t$ has been observed. While the training regime persists, $\
 around a stable seasonal level; a persistent change in the input regime moves the state to a part of
 the state space where the reconstruction error differs systematically. The direction of that shift is
 empirical. In our exploratory work the defect fell during dry spells, which we attributed to a
-near-constant input driving the state towards a near-stationary point that is easy to reconstruct; the
+near-constant input driving the state toward a near-stationary point that is easy to reconstruct; the
 downward direction was therefore pre-specified. Whether a smoother state path improves monitoring is not assumed but
 tested by the ablation below.
 
 \paragraph{Training.} The penalty weight is $\lambda=0$ for three warm-up epochs and then decays
-geometrically from 0.1 towards 0.01. We use Adam (learning rate $10^{-3}$, batch size 256, gradient
+geometrically from 0.1 toward 0.01. We use Adam (learning rate $10^{-3}$, batch size 256, gradient
 clipping at norm 1) for at most 40 epochs, with early stopping (patience 5) on the 1988--1990 validation
 error, and with checkpoints eligible only once the penalty is active. Every configuration is trained
 with five seeds per station.
 
 \paragraph{Ablation and baseline.} The \emph{$\lambda=0$ ablation} has the identical backbone and
 projector, but the projector is fitted on hidden states with stopped gradients. The defect
-\eqref{eq:defect} is thus computed in exactly the same way, while the state path is not regularised.
+\eqref{eq:defect} is thus computed in exactly the same way, while the state path is not regularized.
 A gated recurrent unit (GRU) network \citep{cho2014} of the same size is the forecasting baseline.
 
 \subsection{Detectors}\label{sec:detectors}
@@ -236,7 +236,7 @@ All daily scores are converted to anomalies $z_t$ by subtracting a day-of-year m
 day-of-year standard deviation, both estimated on 1961--1990 and smoothed over $\pm15$ days;
 seed-level anomalies are averaged over the five seeds. The pre-specified detectors are:
 \begin{description}[leftmargin=1.2em,itemsep=2pt]
-\item[D1, regularised defect:] $z_t$ of $\log d_t$ from the regularised network.
+\item[D1, regularized defect:] $z_t$ of $\log d_t$ from the regularized network.
 \item[D2, ablation defect:] the same statistic from the $\lambda=0$ network.
 \item[D3, daily SPI-90:] the 90-day precipitation total (at least 80 observed days, rescaled to 90)
 transformed to a standard normal quantile through a zero-inflated gamma distribution fitted for each
@@ -245,13 +245,13 @@ day of year on 1961--1990 with $\pm15$-day pooling \citep{stagge2015}.
 90\% observed days, three-month sums, and a zero-inflated gamma distribution for each calendar month on
 1961--1990, updated once a month. Its threshold is restricted to the dry side
 (Section~\ref{sec:calibration}).
-\item[D5, forecast residual:] $z_t$ of $\tilde P_t-\hat y_t$ from the regularised network, which asks
+\item[D5, forecast residual:] $z_t$ of $\tilde P_t-\hat y_t$ from the regularized network, which asks
 whether the defect carries information beyond the network's own forecast error.
 \end{description}
 Two detectors were added after the primary results had been seen and are reported as post hoc. D7 is a
 daily SPI-30, built as D3 with a 30-day total (at least 27 observed days); it tests whether the
-behaviour of the defect simply reflects the network's 30-day input window. D6 combines D1 and D3 by
-monitoring the re-standardised mean of their anomalies.
+behavior of the defect simply reflects the network's 30-day input window. D6 combines D1 and D3 by
+monitoring the re-standardized mean of their anomalies.
 
 D1, D2, D3, D5, D6 and D7 are monitored by the one-sided lower CUSUM \citep{page1954}
 \begin{equation}\label{eq:cusum}
@@ -270,9 +270,9 @@ compare detectors at a matched \emph{alarm budget}. For each region and detector
 $c$) is chosen on a fine grid so that the detector raises, pooled over stations, $\beta$ alarms per
 station-year during 1991--2000. The primary budget is $\beta=1$; $\beta=0.5$ and $\beta=2$ are
 sensitivity analyses. The detectors are thus calibrated to the same target alarm budget on 1991--2000.
-Their realised alarm frequencies and false-alarm rates on 2001--2024 are evaluated separately and need not
+Their realized alarm frequencies and false-alarm rates on 2001--2024 are evaluated separately and need not
 be identical, so the comparisons reflect a common historical calibration budget rather than identical
-realised false-alarm rates; the realised false-alarm rate is reported beside every detection rate, and
+realized false-alarm rates; the realized false-alarm rate is reported beside every detection rate, and
 paired differences in it beside every difference in detection. Budgets that a detector cannot
 attain (for example, a month-end rule cannot raise two alarms a year with a 90-day refractory period)
 are flagged. One correction to the pre-specified search was needed. The alarm count of the month-end
@@ -298,7 +298,7 @@ hit and as a false alarm. Both conventions apply equally to every detector.
 
 Three post hoc checks address the scoring rule (Online Resource 1, Section~\ref{S-sec:matching}). First,
 a \emph{one-to-one} rule assigns every alarm to at most one event: events are processed in chronological
-order and each takes the earliest unassigned alarm in its window, which maximises the number of matched
+order and each takes the earliest unassigned alarm in its window, which maximizes the number of matched
 events, and a false alarm is then an unmatched alarm outside $[\tau-60,\text{end}]$ of every event.
 Second, both rules are re-scored with pre-onset limits of 60, 30 and 0 days and post-onset limits of 120,
 90 and 60 days. Third, because one alarm a year and a 180-day window let uninformative alarms score hits,
@@ -328,7 +328,7 @@ are re-scored at their calibrated thresholds, which do not depend on the events.
 To relate the defect to the hydrometeorological state, we regress station-month means of the D1 anomaly on SPI-3 and on MERRA-2 anomalies of
 root-zone soil wetness, 2-m temperature and evapotranspiration (1981--2024), with station fixed effects
 and standard errors clustered by year-month, which absorbs cross-station correlation. Predictors and
-outcome are standardised. To ask whether the defect adds \emph{predictive} information, we fit weekly
+outcome are standardized. To ask whether the defect adds \emph{predictive} information, we fit weekly
 logistic regressions for the event ``a reference drought begins within 60 days'', excluding weeks inside
 an ongoing event, with SPI-90 alone or with the 30-day mean of D1, D2 or D5 added. Models are evaluated
 by five-fold cross-validation over contiguous blocks of years \citep{roberts2017}; differences in AUC
@@ -342,7 +342,7 @@ training weeks within 60 days of a test block. The predictors are prospective in
 the networks and all reference distributions are fitted on 1961--1990.
 
 \subsection{Temperature-aware extension}\label{sec:mv_methods}
-A network that sees precipitation alone can only summarise precipitation. To test whether a richer state
+A network that sees precipitation alone can only summarize precipitation. To test whether a richer state
 helps, we specified a second analysis in a protocol amendment, written after the results above were known
 and before any temperature data were processed (Appendix~\ref{app:protocol}).
 
@@ -361,7 +361,7 @@ precipitation and next-day $E_t$ with equal weight, so that its state must repre
 Architecture, penalty schedule, ablation, training rule and seeds are as in Section~\ref{sec:model}.
 
 \paragraph{Detectors.} D8 and D9 are the defects of the temperature-aware network and of its $\lambda=0$
-ablation. The natural comparators are now the standardised precipitation--evapotranspiration index
+ablation. The natural comparators are now the standardized precipitation--evapotranspiration index
 (SPEI; \citealp{vicenteserrano2010}) on daily 30- and 90-day sums of $P_t-E_t$ (D10 and D11), with a
 three-parameter log-logistic distribution fitted for each day of year (pooling $\pm15$ days) on 1961--1990
 by probability-weighted moments. D1, D3 and D7 are recomputed on the same stations. Calibration, scoring and
@@ -371,7 +371,7 @@ analysis uses SPEI-90, SPEI-30 and SPI-30 together as the base model.
 \subsection{Forecast evaluation}\label{sec:forecast_methods}
 Next-day forecasts of $\tilde P_{t+1}$ in 2001--2024 are scored by mean squared and absolute error, the
 mean squared error skill score (MSESS) relative to day-of-year climatology, and the AUC for exceeding
-the station's 1961--1990 95th percentile. Station-level paired differences between the regularised
+the station's 1961--1990 95th percentile. Station-level paired differences between the regularized
 network and the ablation or the GRU are tested with Wilcoxon signed-rank tests, and equivalence of
 mean squared error with two one-sided tests (TOST) at a margin of $\pm2\%$ \citep{schuirmann1987}. The
 path increment $Q_{\mathrm{path}}=\sum_s\|h_{s+1}-h_s\|$ over a window is compared within the Elman
@@ -389,12 +389,12 @@ code, analyses and results and take full responsibility for them.
 \subsection{Forecast accuracy and the state path}\label{sec:res_forecast}
 Next-day precipitation is only weakly predictable from precipitation alone: MSESS against climatology
 ranged from \msssmin\ to \msssmax\ across regions (Table~\ref{tab:forecast}). Within that limit the
-regularisation was neutral (Table~\ref{tab:forecastpaired}). Pooled over \nstall\ stations, the 90\% confidence interval for the relative
-MSE difference between the regularised network and its ablation was \msediffloall\% to \msediffhiall\%,
+regularization was neutral (Table~\ref{tab:forecastpaired}). Pooled over \nstall\ stations, the 90\% confidence interval for the relative
+MSE difference between the regularized network and its ablation was \msediffloall\% to \msediffhiall\%,
 and against the GRU \msediffgruloall\% to \msediffgruhiall\%; equivalence within $\pm2\%$ was
 established in every region (largest TOST $p$-value $\tostmax$). Intervals from resampling calendar
 years within region, which allow for the dependence among stations that share weather, lead to the same
-conclusion (Online Resource 1, Table~\ref{S-tab:forecastcluster}). The regularisation reduced the
+conclusion (Online Resource 1, Table~\ref{S-tab:forecastcluster}). The regularization reduced the
 path increment by a median of \qpathred\% relative to the ablation (pooled Wilcoxon $p<10^{-4}$), with a
 similar reduction in each region. The penalty therefore does what it is designed to do, smoothing the
 state path, at no cost in forecast accuracy. Absolute $Q_{\mathrm{path}}$ values are not comparable
@@ -451,8 +451,8 @@ false-alarm rate. On the events both detected, however, the defect alarmed a med
 \dtimallDoneDthree\ days earlier (CI \dtimloallDoneDthree\ to \dtimhiallDoneDthree), and earlier in
 \fearlyallDoneDthree\% of them. The defect is thus faster but less sensitive. Monthly SPI-3 also
 detected more onsets than the defect (difference \spithreedrydpodall, CI \spithreedrydpodloall\ to
-\spithreedrydpodhiall). \emph{Does the regularisation
-matter for monitoring?} We found no statistically detectable difference: the defect of the regularised
+\spithreedrydpodhiall). \emph{Does the regularization
+matter for monitoring?} We found no statistically detectable difference: the defect of the regularized
 network and of its ablation differed by \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to
 \dpodhiallDoneDtwo) and by a median of \dtimallDoneDtwo\ days in timing. The interval rules out a gain in
 POD larger than about 0.03 at the precision of this study; it does not show that the two statistics are
@@ -547,7 +547,7 @@ evapotranspiration (Table~\ref{tab:assoc}, Fig.~\ref{fig:assoc}). It was negativ
 evapotranspiration in Germany, Australia and Taiwan. These anomalies explain between a fifth and more
 than a third of the within-station variation of the monthly defect ($R^2_w$ in Table~\ref{tab:assoc}).
 Its ablation has nearly identical coefficients, so the association does not depend on the
-regularisation. Because the network sees precipitation only, the soil-moisture association beyond SPI-3
+regularization. Because the network sees precipitation only, the soil-moisture association beyond SPI-3
 may reflect the sub-seasonal timing of rainfall within the three-month window, to which a 30-day
 recurrent summary is sensitive and SPI-3 is not. We did not test this explanation, and we do not
 interpret the association as evidence that the network infers land-surface processes.
@@ -557,7 +557,7 @@ interpret the association as evidence that the network infers land-surface proce
 \begin{figure}[tbp]
 \centering
 \includegraphics[width=0.9\textwidth]{association.pdf}
-\caption{Standardised coefficients (95\% CIs) of concurrent hydrometeorological anomalies in monthly
+\caption{Standardized coefficients (95\% CIs) of concurrent hydrometeorological anomalies in monthly
 regressions of the defect anomaly, by region}\label{fig:assoc}
 \end{figure}
 
@@ -598,7 +598,7 @@ Texas, Germany and Australia, at median distances of \kmdonortexas, \kmdonorgerm
 the mean precipitation MSESS rose from \mvmsssp\ to \mvmsssmv, with an increase in every region and at
 \mvmsssfrac\% of stations (Online Resource 1, Table~\ref{S-tab:forecastmv}). The penalty again reduced the path increment, by
 \mvqpathred\%, and kept precipitation forecast error equivalent to the ablation (90\% CI \mvmselo\% to
-\mvmsehi\%). Against a temperature-aware GRU the regularised network was within the $\pm2\%$ margin in Texas, Germany
+\mvmsehi\%). Against a temperature-aware GRU the regularized network was within the $\pm2\%$ margin in Texas, Germany
 and Taiwan but not in Australia, where the GRU's mean squared error was \mvgruaustralia\% lower.
 
 As a monitoring statistic, however, the temperature-aware defect was weaker, not stronger
@@ -659,7 +659,7 @@ on \nstall\ stations, and it holds for the temperature-aware networks too. The p
 more regular latent representation at no cost in accuracy.
 
 The second concerns monitoring: the defect of such a network carries a drought signal. It declines
-towards onset, clearly in three of the four regions and only briefly in Taiwan; it is associated with
+toward onset, clearly in three of the four regions and only briefly in Taiwan; it is associated with
 SPI-3 in every region and with soil moisture beyond SPI-3 in three; it detects \podallDone\ of onsets
 where randomly timed alarms would detect \chanceallDone; by the day of onset it has alarmed for
 \dlDonezero\ of all onsets, against \dlDthreezero\ for SPI-90; and on onsets that both detect it alarms a
@@ -672,14 +672,14 @@ SPI-90 is mostly reproduced by SPI-30; and we found no predictive
 information beyond SPI-30 under retrospective or forward-chaining validation. The defect is therefore
 better viewed as a complement to a long-accumulation index than as a replacement for it: combined with
 SPI-90 it kept that index's sensitivity and detected more onsets than SPI-90 alone within 30 and 60 days
-of the onset. Whether the regularisation itself contributes to monitoring remains open. The regularised and
-unregularised defects differed by \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to \dpodhiallDoneDtwo),
+of the onset. Whether the regularization itself contributes to monitoring remains open. The regularized and
+unregularized defects differed by \dpodallDoneDtwo\ in POD (CI \dpodloallDoneDtwo\ to \dpodhiallDoneDtwo),
 which bounds any gain at about 0.03 at the precision of this study and establishes neither a benefit nor
 equivalence; more stations or longer records are needed to resolve a difference of that size.
 
 One explanation is consistent with these results, although we did not test it directly. A recurrent
 network that sees a 30-day window encodes recent precipitation; when a dry spell sets in, its state may
-move towards the region of state space reached under near-zero input, where backward reconstruction is
+move toward the region of state space reached under near-zero input, where backward reconstruction is
 easy, and the defect falls. On this reading the defect is a nonlinear, short-memory summary of recent
 precipitation. The results show it to be comparable in timing to SPI-30 but less sensitive, possibly
 because the network was trained to forecast tomorrow's rain rather than to measure deficits. The penalty
@@ -691,9 +691,9 @@ temperature and evaporative demand, and asking it to forecast evaporative demand
 better precipitation forecaster, but its defect no longer separated drought onsets from randomly timed
 alarms. A plausible but untested explanation is that its state now tracks several slowly varying,
 seasonally structured inputs, so that a dry spell no longer drives it to a distinctive, easily
-reconstructed configuration. In addition, the reference level of the defect drifted upwards out of
+reconstructed configuration. In addition, the reference level of the defect drifted upward out of
 sample, together with warmer 2-m temperatures but in Texas and Germany already in 1991--2000, and a
-monitor standardised on 1961--1990 does not adjust for such drift. Both observations suggest remedies, an
+monitor standardized on 1961--1990 does not adjust for such drift. Both observations suggest remedies, an
 adaptive reference level and a training objective tied to the monitoring task, that require further
 investigation; what the state encodes is shaped by its training objective, which here is forecasting.
 
@@ -702,8 +702,8 @@ The design choices that changed our conclusions relative to the exploratory stud
 this method. Using
 an independently defined event set rather than one detector's alarm as the reference avoids rewarding
 whichever detector is fastest. Calibrating to a common alarm budget limits how far a detector can appear
-earlier because it alarms more often, provided the realised false-alarm rates are reported as well; nominal ARL calibration on autocorrelated, seasonal data need not
-equalise alarm rates. Timing compared on jointly detected events is conditional on both detectors
+earlier because it alarms more often, provided the realized false-alarm rates are reported as well; nominal ARL calibration on autocorrelated, seasonal data need not
+equalize alarm rates. Timing compared on jointly detected events is conditional on both detectors
 alarming, so it should be read together with detection by deadline, which counts every onset and shows
 speed and sensitivity at once. Including
 the ablation and a comparator with the same time scale as the learned model's memory exposes whether a
@@ -732,20 +732,20 @@ pre-specified evaluation.
 
 \subsection{Limitations}\label{sec:limits}
 The reference events come from reanalysis soil moisture, which is a model product partly forced by
-precipitation. This may favour precipitation-based detectors, and not necessarily equally, since their
+precipitation. This may favor precipitation-based detectors, and not necessarily equally, since their
 time scales may match the memory of the reanalysis land-surface model to different degrees; it also
 targets agricultural rather than hydrological drought; other references, such as streamflow or official
 drought assessments like the U.S. Drought Monitor \citep{svoboda2002}, may rank detectors differently.
 The events are station-level onsets that cluster into regional episodes, and \nsharecell\ stations share
 a reanalysis grid cell with another station, so the effective sample is smaller than the event count; the year-cluster and block bootstraps allow for this, but more regions
-would be needed to generalise across climates. The networks use one architecture with a 30-day window
+would be needed to generalize across climates. The networks use one architecture with a 30-day window
 and 32 hidden units; longer windows or gated cells could change the defect. The temperature-aware
 analysis covers \mvnst\ of the stations, uses donor temperature records for some of them (in Australia a
 median of 82~km away), and estimates evaporative demand by the temperature-only Hargreaves formula. The
 station networks differ in density, and Taiwan has only 13 stations and 151 events, which makes its
 intervals wide. The direction of the CUSUM was pre-specified as downward; an upward or two-sided rule was
 not evaluated. The protocol was kept as a dated file with the code and was not lodged with an external
-registry. Finally, several analyses were added after the primary results were seen and are labelled post
+registry. Finally, several analyses were added after the primary results were seen and are labeled post
 hoc: SPI-30 and the combination; the one-to-one rule, the alternative windows, the random-timing
 reference, the block bootstrap, the dry-side calibration of SPI-3, forward-chaining validation, detection
 by deadline, the fixed-reference events and the year-cluster forecast intervals; the
@@ -762,7 +762,7 @@ onsets in the first two months without loss of sensitivity. Under a protocol-bas
 budgets and dependence-aware inference, daily SPI detects more onsets than the defect alone and a 30-day
 SPI reproduces most of its speed; these findings were stable under one-to-one event matching,
 alternative scoring windows, a fixed-reference event definition and forward-chaining validation. Whether
-the regularisation improves
+the regularization improves
 monitoring could not be resolved at the precision of this study, and the temperature-aware form improves
 forecasts but needs further development as a monitor. Learned monitoring statistics should be evaluated
 against a random-timing reference, indices of matching time scale and their own ablations before
@@ -778,7 +778,7 @@ the scoring rule and of the validation scheme, additional results of the tempera
 calibration diagnostics, the protocol with its amendments, and a description of the code and data.
 Online Resource 2 (ZIP archive) contains the code, the protocol, the run commands and the result files.
 
-\bmhead{Acknowledgements}
+\bmhead{Acknowledgments}
 This work was partially supported by the National Science and Technology Council, Taiwan (grant
 115-2118-M-001-004-), and by the Institute of Statistical Science, Academia Sinica.
 
@@ -787,12 +787,12 @@ This work was partially supported by the National Science and Technology Council
 The protocol (file \texttt{PROTOCOL.md} in Online Resource 2) fixed the data rules, periods, models,
 detectors D1--D5, the calibration rule, the event definition, the scoring windows, the bootstrap and the
 secondary analyses before any network was trained. Deviations, in chronological order: (1) before any
-evaluation, the warm-up was shortened from five to three epochs and checkpoints of the regularised network were made eligible
+evaluation, the warm-up was shortened from five to three epochs and checkpoints of the regularized network were made eligible
 only once the penalty is active, after a pilot on one station showed that early stopping otherwise
-selected warm-up checkpoints, making the regularised network identical to its ablation; (2) before any
+selected warm-up checkpoints, making the regularized network identical to its ablation; (2) before any
 evaluation, the covariate source changed from ERA5-Land to MERRA-2 (NASA POWER) because of access rate
 limits, so soil-moisture percentiles use 1981--2024; (3) after the primary results, SPI-30 (D7) and the
-combination D6 were added and are labelled post hoc; (4) the calibration grid search returns the grid
+combination D6 were added and are labeled post hoc; (4) the calibration grid search returns the grid
 value whose calibration rate is closest to the budget, and unattainable budgets are flagged.
 Amendment~1, written after the results above were known and before any temperature data were processed,
 specified the temperature-aware analysis of Section~\ref{sec:mv_methods}: the temperature completeness and
@@ -823,10 +823,10 @@ Taiwan (grant number 115-2118-M-001-004-).
 disclose.
 
 \paragraph{Author contributions} Hui-Mean Foo: data curation, formal analysis, validation, writing
-(review and editing). Yuan-chin Ivan Chang: conceptualisation, methodology, software, formal analysis,
+(review and editing). Yuan-chin Ivan Chang: conceptualization, methodology, software, formal analysis,
 writing (original draft). Both authors read and approved the final manuscript.
 
-\paragraph{Data availability} All data analysed are publicly available: GHCN-Daily precipitation and
+\paragraph{Data availability} All data analyzed are publicly available: GHCN-Daily precipitation and
 temperature \citep{ghcnd_data}, the Central Weather Administration station records rebuilt in the
 Raingel archive \citep{raingel_data}, and MERRA-2 covariates through the NASA POWER archive
 \citep{nasapower_data}. Station lists, reference events and all result tables are included in Online

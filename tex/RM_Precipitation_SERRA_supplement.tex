@@ -17,8 +17,8 @@
 
 \begin{document}
 \title[Online Resource 1]{Online Resource 1: Supplementary Material for ``Can the hidden state of a
-recurrent precipitation model monitor drought onset? A pre-specified event-based evaluation of
-backward-coherence regularisation'', \emph{Stochastic Environmental Research and Risk Assessment}}
+recurrent precipitation model monitor drought onset? A planned event-based evaluation of
+backward-coherence regularization'', \emph{Stochastic Environmental Research and Risk Assessment}}
 \author[1]{\fnm{Hui-Mean} \sur{Foo}\,\orcidtext{0000-0003-4200-5849}}\email{huimean87@gmail.com}
 \author*[1]{\fnm{Yuan-chin Ivan} \sur{Chang}\,\orcidtext{0000-0002-4977-7721}}\email{ycchang@as.edu.tw}
 \affil[1]{\orgdiv{Institute of Statistical Science}, \orgname{Academia Sinica},
@@ -55,7 +55,7 @@ events at a station overlap, one alarm can be credited to both, and an alarm tha
 short event but precedes onset $+120$ days counts both as a late hit and as a false alarm.
 Table~\ref{tab:episodes} shows how often this happens. Under the \emph{one-to-one} rule every alarm is
 assigned to at most one event: events are processed in chronological order and each takes the earliest
-unassigned alarm in its window, which for windows of equal length maximises the number of matched events;
+unassigned alarm in its window, which for windows of equal length maximizes the number of matched events;
 a false alarm is then an unmatched alarm outside $[\text{onset}-\text{pre},\text{end}]$ of every event.
 
 \paragraph{Scoring window.} Both rules are re-scored with pre-onset limits of 60, 30 and 0 days and
@@ -179,7 +179,7 @@ Online Resource 2 holds the scripts in \texttt{code/}, the protocol, the result 
 \item \texttt{fetch\_ghcnd\_long.py}, \texttt{build\_taiwan.py} (with the archived
 \texttt{fetch\_taiwan\_hydromet.py}) and \texttt{fetch\_power.py} download and assemble the gauge records
 and the MERRA-2 covariates and apply the completeness rules.
-\item \texttt{serra/train\_models.py} trains the regularised network, its $\lambda=0$ ablation and the
+\item \texttt{serra/train\_models.py} trains the regularized network, its $\lambda=0$ ablation and the
 GRU (five seeds per station) and stores daily forecasts, defects and path increments.
 \item \texttt{serra/build\_scores.py} computes the detector scores, SPI-90, SPI-3, soil-moisture
 percentiles and reference events; \texttt{serra/add\_spi30.py} adds the post hoc SPI-30.

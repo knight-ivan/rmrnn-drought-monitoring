@@ -1,7 +1,7 @@
 # Hidden-state drought monitoring with recurrent precipitation models
 
 Code, protocol and results for *"Can the hidden state of a recurrent precipitation model monitor
-drought onset? A pre-specified event-based evaluation of backward-coherence regularisation"*
+drought onset? A planned event-based evaluation of backward-coherence regularization"*
 (Foo & Chang), prepared for *Stochastic Environmental Research and Risk Assessment*.
 Repository: https://github.com/knight-ivan/rmrnn-drought-monitoring (private until acceptance).
 This folder is also what is submitted to the journal as Online Resource 2.
@@ -97,7 +97,7 @@ From the stored score panels, in the second environment above:
   data and the per-seed score files, about 2 GB).
 
 ## What the evidence says (as stated in the paper)
-- Forecasts: the regularised network is equivalent to its λ=0 ablation and to a GRU within ±2%
+- Forecasts: the regularized network is equivalent to its λ=0 ablation and to a GRU within ±2%
   MSE (TOST), and its hidden-state path increment is 23.5% smaller.
 - Warning (1,466 station-level soil-moisture drought onsets, 133 stations, 2001–2024, one alarm
   per station-year): the defect detects 0.665 of onsets, against 0.463 for randomly timed alarms
@@ -105,7 +105,7 @@ From the stored score panels, in the second environment above:
   a median 16 days earlier. Daily SPI-30 accounts for most of that speed, and the defect adds no
   detectable predictive information once SPI-30 is known (blocked CV and forward chaining).
   Combined with SPI-90 (post hoc) it keeps SPI-90's sensitivity and advances alarms by 5 days.
-- Regularised vs unregularised defect: ΔPOD +0.010 [−0.009, +0.029]; no statistically detectable
+- Regularized vs unregularized defect: ΔPOD +0.010 [−0.009, +0.029]; no statistically detectable
   difference, which is not the same as equivalence.
 - Temperature-aware extension (120 stations, 1,336 onsets): forecasts improve (MSESS 0.116 vs
   0.086); the defect detects 0.433 of onsets, the level of randomly timed alarms (0.433), against
@@ -121,7 +121,7 @@ From the stored score panels, in the second environment above:
   detected 0.257 of onsets against 0.194 for SPI-90 (+0.063 [+0.013, +0.119]); SPI-90 overtakes
   it after day 41. The D1+D3 combination is ahead of SPI-90 at 30 and 60 days.
 - Fixed-reference events (percentiles from 1981–2000 only; 1,800 onsets): defect 0.655, SPI-90
-  0.718 (−0.063 [−0.097, −0.028]); regularised minus unregularised +0.001 [−0.016, +0.017].
+  0.718 (−0.063 [−0.097, −0.028]); regularized minus unregularized +0.001 [−0.016, +0.017].
 - Forecast equivalence holds with year-cluster intervals as well.
 
 ## Changes from the earlier exploratory work (all disclosed in the paper)

@@ -1,6 +1,6 @@
 \begin{table}[tbp]
 \caption{Next-day forecast accuracy on 2001--2024 (station means over five seeds, then averaged
-over stations). MSE and MAE refer to standardised $\log(1+P)$; MSESS is the MSE skill score relative
+over stations). MSE and MAE refer to standardized $\log(1+P)$; MSESS is the MSE skill score relative
 to day-of-year climatology; AUC is for exceeding the station's 1961--1990 95th percentile;
 $Q_{\mathrm{path}}$ is the mean hidden-state path increment over a 30-day window.}
 \label{tab:forecast}
@@ -9,23 +9,23 @@ $Q_{\mathrm{path}}$ is the mean hidden-state path increment over a 30-day window
 \toprule
 Region & Model & MSE & MSESS & MAE & AUC & $Q_{\mathrm{path}}$\\
 \midrule
-Central Texas & Regularised & 0.971 & 0.054 & 0.618 & 0.656 & 12.4 \\
+Central Texas & Regularized & 0.971 & 0.054 & 0.618 & 0.656 & 12.4 \\
  & $\lambda=0$ & 0.973 & 0.053 & 0.620 & 0.654 & 16.0 \\
  & GRU & 0.973 & 0.053 & 0.620 & 0.658 & 8.6 \\
 \midrule
-Germany & Regularised & 0.916 & 0.103 & 0.758 & 0.671 & 17.6 \\
+Germany & Regularized & 0.916 & 0.103 & 0.758 & 0.671 & 17.6 \\
  & $\lambda=0$ & 0.917 & 0.103 & 0.759 & 0.671 & 23.0 \\
  & GRU & 0.916 & 0.103 & 0.758 & 0.671 & 13.2 \\
 \midrule
-SE Australia & Regularised & 0.924 & 0.070 & 0.601 & 0.665 & 12.1 \\
+SE Australia & Regularized & 0.924 & 0.070 & 0.601 & 0.665 & 12.1 \\
  & $\lambda=0$ & 0.925 & 0.069 & 0.600 & 0.663 & 16.3 \\
  & GRU & 0.924 & 0.070 & 0.600 & 0.667 & 9.2 \\
 \midrule
-Taiwan & Regularised & 0.782 & 0.176 & 0.670 & 0.806 & 16.6 \\
+Taiwan & Regularized & 0.782 & 0.176 & 0.670 & 0.806 & 16.6 \\
  & $\lambda=0$ & 0.782 & 0.176 & 0.670 & 0.805 & 21.2 \\
  & GRU & 0.780 & 0.178 & 0.668 & 0.806 & 13.7 \\
 \midrule
-All regions & Regularised & 0.922 & 0.086 & 0.660 & 0.678 & 14.3 \\
+All regions & Regularized & 0.922 & 0.086 & 0.660 & 0.678 & 14.3 \\
  & $\lambda=0$ & 0.923 & 0.085 & 0.661 & 0.677 & 18.7 \\
  & GRU & 0.922 & 0.085 & 0.660 & 0.679 & 10.7 \\
 \botrule
@@ -33,7 +33,7 @@ All regions & Regularised & 0.922 & 0.086 & 0.660 & 0.678 & 14.3 \\
 \end{table}
 
 \begin{table}[tbp]
-\caption{Paired station-level comparisons of the regularised network. MSE differences are mean relative differences (\%)
+\caption{Paired station-level comparisons of the regularized network. MSE differences are mean relative differences (\%)
 with 90\% confidence intervals, which coincide with the TOST equivalence test at level 0.05: an interval
 inside $\pm2\%$ establishes equivalence. $Q_{\mathrm{path}}$: median relative change (\%) against the
 $\lambda=0$ ablation with its Wilcoxon signed-rank $p$-value.}
