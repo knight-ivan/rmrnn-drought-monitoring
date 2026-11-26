@@ -16,20 +16,29 @@ is the note to the co-author.
 
 ## What to upload, and as which item type
 
+The journal compiles the manuscript itself from a LaTeX zip ("LaTeX documents with figures and
+tables compressed into a .zip format"); the cover letter is not part of that zip and is uploaded as
+its own item.
+
 | File in `01_Upload_to_Editorial_Manager/` | Editorial Manager item |
 |---|---|
-| `01_Cover_Letter_SERRA.pdf` (2 pp) | Cover Letter |
-| `02_Manuscript_RM_Precipitation_SERRA.pdf` (31 pp) | Manuscript (PDF) |
+| `01_Cover_Letter_SERRA.pdf` (2 pp) | Cover Letter (separate upload) |
+| `02_Manuscript_LaTeX_source.zip` | Manuscript — LaTeX source zip; the system builds the review PDF |
 | `03_Online_Resource_1_Supplementary_Material.pdf` (20 pp) | Supplementary Material (ESM) |
-| `04_Manuscript_LaTeX_source.zip` | LaTeX Source Files |
-| `05_Online_Resource_2_Code_Protocol_Results.zip` (6 MB) | Supplementary Material (ESM) |
+| `04_Online_Resource_2_Code_Protocol_Results.zip` (6 MB) | Supplementary Material (ESM) |
 
-`04_Manuscript_LaTeX_source.zip` is flat and self-contained: main `.tex`, `.bbl`, `refs.bib`,
-`sn-jnl.cls`, `sn-mathphys-ay.bst`, 6 figure PDFs and 10 table files. References to Online Resource 1
-are written in as plain text. The build script unzips it into an empty folder, compiles it and checks
-that the text equals the manuscript PDF.
+`02_Reference_only_do_not_upload/Manuscript_RM_Precipitation_SERRA_master.pdf` (31 pp) is our own
+build. Do not upload it; use it to check the PDF that Editorial Manager builds from the zip (page
+count, figures, tables, references) before you approve the submission.
 
-`05_Online_Resource_2_...zip` holds the code (all original and all new scripts), `PROTOCOL.md` with
+`02_Manuscript_LaTeX_source.zip` is flat (no subfolders) and self-contained: one main document
+`RM_Precipitation_SERRA.tex` (the only file with `\documentclass`), the `.bbl` (so no BibTeX run is
+needed), `refs.bib`, `sn-jnl.cls`, `sn-mathphys-ay.bst`, the 6 figure PDFs, the 10 table files and
+`numbers.tex`. It compiles with pdflatex. References to Online Resource 1 are written in as plain
+text. The cover letter is not in it. The build script unzips it into an empty folder, compiles it and
+checks that the text equals the master PDF.
+
+`04_Online_Resource_2_...zip` holds the code (all original and all new scripts), `PROTOCOL.md` with
 its three amendments, `reproduce.sh`, `requirements.txt`, every result CSV, the station lists, the
 reference events, the figures, the run logs, the LaTeX sources and a SHA-256 manifest. Running
 `sh reproduce.sh` inside it rebuilds every table and number of the paper from its own result files
@@ -37,7 +46,8 @@ and compares them with the published ones; the build script runs that check on a
 It does not hold the score panels (200 MB), the per-seed scores or the raw downloads.
 
 Checks made by the build script: no unresolved reference ("??") in any PDF, all fonts embedded,
-abstract 150–250 words, LaTeX source compiles alone, Online Resource 2 verifies itself.
+abstract 150–250 words, LaTeX zip holds one main document and no cover letter and compiles alone,
+Online Resource 2 verifies itself.
 
 ## Form fields (copy and paste)
 
@@ -75,6 +85,8 @@ https://github.com/knight-ivan/rmrnn-drought-monitoring (private; made public on
       Zenodo, embargoed until acceptance). The supplement says they will be deposited with the
       public release.
 - [ ] Enter both ORCID iDs and the declarations in the Editorial Manager form.
+- [ ] After upload, open the PDF that Editorial Manager builds from the LaTeX zip and compare it with
+      `02_Reference_only_do_not_upload/Manuscript_RM_Precipitation_SERRA_master.pdf` (31 pp).
 - [x] Cover letter addressed to the Editor-in-Chief, Dr. Andreas Langousis (University of Patras), as listed on
       the journal's editorial-board page on 26 November 2026. Check the page again if you submit much later.
 - [ ] Optional: suggested and opposed reviewers (each needs an institutional email address).

@@ -151,14 +151,21 @@ def main():
     if os.path.exists(out):
         shutil.rmtree(out)
     up = os.path.join(out, "01_Upload_to_Editorial_Manager"); os.makedirs(up)
+    ref = os.path.join(out, "02_Reference_only_do_not_upload"); os.makedirs(ref)
     print("building PDFs"); build_master()
-    for src, dst, lab in [(COVER, "01_Cover_Letter_SERRA.pdf", "cover letter"),
-                          (MAIN, "02_Manuscript_RM_Precipitation_SERRA.pdf", "manuscript"),
-                          (SUPP, "03_Online_Resource_1_Supplementary_Material.pdf", "Online Resource 1")]:
-        shutil.copy(os.path.join(TEX, src + ".pdf"), os.path.join(up, dst)); check_pdf(os.path.join(up, dst), lab)
+    # The journal compiles the manuscript from the LaTeX zip; the cover letter is a separate item.
+    # The master PDF of the manuscript is kept only to compare with the PDF the system builds.
+    for src, dst, lab in [(COVER, os.path.join(up, "01_Cover_Letter_SERRA.pdf"), "cover letter"),
+                          (SUPP, os.path.join(up, "03_Online_Resource_1_Supplementary_Material.pdf"), "Online Resource 1"),
+                          (MAIN, os.path.join(ref, "Manuscript_RM_Precipitation_SERRA_master.pdf"), "manuscript")]:
+        shutil.copy(os.path.join(TEX, src + ".pdf"), dst); check_pdf(dst, lab)
     flat = os.path.join(out, "_flat"); flat_source(flat)
-    zip_dir(flat, os.path.join(up, "04_Manuscript_LaTeX_source.zip")); shutil.rmtree(flat)
-    online_resource_2(os.path.join(up, "05_Online_Resource_2_Code_Protocol_Results.zip"))
+    names = sorted(os.listdir(flat))
+    assert not any(n.lower().startswith("cover") for n in names), "cover letter must not be in the LaTeX zip"
+    assert sum(open(os.path.join(flat, n), errors="replace").read().count("\\documentclass")
+               for n in names if n.endswith(".tex")) == 1, "LaTeX zip must hold exactly one main document"
+    zip_dir(flat, os.path.join(up, "02_Manuscript_LaTeX_source.zip")); shutil.rmtree(flat)
+    online_resource_2(os.path.join(up, "04_Online_Resource_2_Code_Protocol_Results.zip"))
     ab = abstract_words(); n = len(ab.split())
     assert 150 <= n <= 250, f"abstract has {n} words"
     open(os.path.join(out, "abstract.txt"), "w").write(ab + "\n")
