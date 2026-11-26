@@ -75,7 +75,8 @@ https://github.com/knight-ivan/rmrnn-drought-monitoring (private; made public on
       Zenodo, embargoed until acceptance). The supplement says they will be deposited with the
       public release.
 - [ ] Enter both ORCID iDs and the declarations in the Editorial Manager form.
-- [ ] Optional: add the Editor-in-Chief's name to the cover letter (it says "Dear Editor").
+- [x] Cover letter addressed to the Editor-in-Chief, Dr. Andreas Langousis (University of Patras), as listed on
+      the journal's editorial-board page on 26 November 2026. Check the page again if you submit much later.
 - [ ] Optional: suggested and opposed reviewers (each needs an institutional email address).
 - [ ] After acceptance: make the repository public.
 
